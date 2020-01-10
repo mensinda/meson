@@ -15,12 +15,12 @@
 import subprocess, os.path
 import typing as T
 
-from ..mesonlib import EnvironmentException, MachineChoice
+from ..mesonlib import EnvironmentException
 
 from .compilers import Compiler, swift_buildtype_args, clike_debug_args
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
+    pass
 
 swift_optimization_args = {'0': [],
                            'g': [],
@@ -35,8 +35,8 @@ class SwiftCompiler(Compiler):
     LINKER_PREFIX = ['-Xlinker']
     language = 'swift'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , **kwargs):
         super().__init__(exelist, version, for_machine, info, **kwargs)
         self.version = version
         self.id = 'llvm'

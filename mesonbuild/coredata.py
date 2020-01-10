@@ -33,7 +33,6 @@ import typing as T
 if T.TYPE_CHECKING:
     from . import dependencies
     from .compilers import Compiler  # noqa: F401
-    from .environment import Environment
 
     OptionDictType = T.Dict[str, 'UserOption[T.Any]']
 
@@ -62,7 +61,7 @@ class UserOption(T.Generic[_T]):
     # Check that the input is a valid value and return the
     # "cleaned" or "native" version. For example the Boolean
     # option could take the string "true" and return True.
-    def validate_value(self, value: T.Any) -> _T:
+    def validate_value(self, value       )      :
         raise RuntimeError('Derived option class did not override validate_value.')
 
     def set_value(self, newvalue):
@@ -83,10 +82,10 @@ class UserBooleanOption(UserOption[bool]):
         super().__init__(description, [True, False], yielding)
         self.set_value(value)
 
-    def __bool__(self) -> bool:
+    def __bool__(self)        :
         return self.value
 
-    def validate_value(self, value) -> bool:
+    def validate_value(self, value)        :
         if isinstance(value, bool):
             return value
         if value.lower() == 'true':
@@ -108,7 +107,7 @@ class UserIntegerOption(UserOption[int]):
             c.append('<=' + str(max_value))
         self.choices = ', '.join(c)
 
-    def validate_value(self, value) -> int:
+    def validate_value(self, value)       :
         if isinstance(value, str):
             value = self.toint(value)
         if not isinstance(value, int):
@@ -119,7 +118,7 @@ class UserIntegerOption(UserOption[int]):
             raise MesonException('New value %d is more than maximum value %d.' % (value, self.max_value))
         return value
 
-    def toint(self, valuestring) -> int:
+    def toint(self, valuestring)       :
         try:
             return int(valuestring)
         except ValueError:
@@ -147,7 +146,7 @@ class UserUmaskOption(UserIntegerOption, UserOption[T.Union[str, int]]):
             raise MesonException('Invalid mode: {}'.format(e))
 
 class UserComboOption(UserOption[str]):
-    def __init__(self, description, choices: T.List[str], value, yielding=None):
+    def __init__(self, description, choices             , value, yielding=None):
         super().__init__(description, choices, yielding)
         if not isinstance(self.choices, list):
             raise MesonException('Combo choices must be an array.')
@@ -169,7 +168,7 @@ class UserArrayOption(UserOption[T.List[str]]):
         self.allow_dups = allow_dups
         self.value = self.validate_value(value, user_input=user_input)
 
-    def validate_value(self, value, user_input: bool = True) -> T.List[str]:
+    def validate_value(self, value, user_input       = True)               :
         # User input is for options defined on the command line (via -D
         # options). Users can put their input in as a comma separated
         # string, but for defining options in meson_options.txt the format
@@ -196,7 +195,7 @@ class UserArrayOption(UserOption[T.List[str]]):
             raise MesonException('"{}" should be a string array, but it is not'.format(newvalue))
 
         if not self.allow_dups and len(set(newvalue)) != len(newvalue):
-            msg = 'Duplicated values in array option is deprecated. ' \
+            msg = 'Duplicated values in array option is deprecated. '\
                   'This will become a hard error in the future.'
             mlog.deprecation(msg)
         for i in newvalue:
@@ -226,7 +225,7 @@ class UserFeatureOption(UserComboOption):
         return self.value == 'auto'
 
 
-def load_configs(filenames: T.List[str]) -> configparser.ConfigParser:
+def load_configs(filenames             )                             :
     """Load configuration files from a named subdirectory."""
     config = configparser.ConfigParser()
     config.read(filenames)
@@ -245,7 +244,7 @@ class DependencyCacheType(enum.Enum):
     CMAKE = 2
 
     @classmethod
-    def from_type(cls, dep: 'dependencies.Dependency') -> 'DependencyCacheType':
+    def from_type(cls, dep                           )                         :
         from . import dependencies
         # As more types gain search overrides they'll need to be added here
         if isinstance(dep, dependencies.PkgConfigDependency):
@@ -257,20 +256,20 @@ class DependencyCacheType(enum.Enum):
 
 class DependencySubCache:
 
-    def __init__(self, type_: DependencyCacheType):
+    def __init__(self, type_                     ):
         self.types = [type_]
         self.__cache = {}  # type: T.Dict[SubCacheKeyType, dependencies.Dependency]
 
-    def __getitem__(self, key: 'SubCacheKeyType') -> 'dependencies.Dependency':
+    def __getitem__(self, key                   )                             :
         return self.__cache[key]
 
-    def __setitem__(self, key: 'SubCacheKeyType', value: 'dependencies.Dependency') -> None:
+    def __setitem__(self, key                   , value                           )        :
         self.__cache[key] = value
 
-    def __contains__(self, key: 'SubCacheKeyType') -> bool:
+    def __contains__(self, key                   )        :
         return key in self.__cache
 
-    def values(self) -> T.Iterable['dependencies.Dependency']:
+    def values(self)                                         :
         return self.__cache.values()
 
 
@@ -282,12 +281,12 @@ class DependencyCache:
     successfully lookup by providing a simple get/put interface.
     """
 
-    def __init__(self, builtins_per_machine: PerMachine[T.Dict[str, UserOption[T.Any]]], for_machine: MachineChoice):
+    def __init__(self, builtins_per_machine                                            , for_machine               ):
         self.__cache = OrderedDict()  # type: T.MutableMapping[CacheKeyType, DependencySubCache]
         self.__builtins_per_machine = builtins_per_machine
         self.__for_machine = for_machine
 
-    def __calculate_subkey(self, type_: DependencyCacheType) -> T.Tuple[T.Any, ...]:
+    def __calculate_subkey(self, type_                     )                       :
         if type_ is DependencyCacheType.PKG_CONFIG:
             return tuple(self.__builtins_per_machine[self.__for_machine]['pkg_config_path'].value)
         elif type_ is DependencyCacheType.CMAKE:
@@ -295,17 +294,17 @@ class DependencyCache:
         assert type_ is DependencyCacheType.OTHER, 'Someone forgot to update subkey calculations for a new type'
         return tuple()
 
-    def __iter__(self) -> T.Iterator['CacheKeyType']:
+    def __iter__(self)                              :
         return self.keys()
 
-    def put(self, key: 'CacheKeyType', dep: 'dependencies.Dependency') -> None:
+    def put(self, key                , dep                           )        :
         t = DependencyCacheType.from_type(dep)
         if key not in self.__cache:
             self.__cache[key] = DependencySubCache(t)
         subkey = self.__calculate_subkey(t)
         self.__cache[key][subkey] = dep
 
-    def get(self, key: 'CacheKeyType') -> T.Optional['dependencies.Dependency']:
+    def get(self, key                )                                         :
         """Get a value from the cache.
 
         If there is no cache entry then None will be returned.
@@ -323,14 +322,14 @@ class DependencyCache:
                 pass
         return None
 
-    def values(self) -> T.Iterator['dependencies.Dependency']:
+    def values(self)                                         :
         for c in self.__cache.values():
             yield from c.values()
 
-    def keys(self) -> T.Iterator['CacheKeyType']:
+    def keys(self)                              :
         return iter(self.__cache.keys())
 
-    def items(self) -> T.Iterator[T.Tuple['CacheKeyType', T.List['dependencies.Dependency']]]:
+    def items(self)                                                                          :
         for k, v in self.__cache.items():
             vs = []
             for t in v.types:
@@ -339,7 +338,7 @@ class DependencyCache:
                     vs.append(v[subkey])
             yield k, vs
 
-    def clear(self) -> None:
+    def clear(self)        :
         self.__cache.clear()
 
 # Can't bind this near the class method it seems, sadly.
@@ -351,7 +350,7 @@ _V = T.TypeVar('_V')
 
 class CoreData:
 
-    def __init__(self, options: argparse.Namespace, scratch_dir: str):
+    def __init__(self, options                    , scratch_dir     ):
         self.lang_guids = {
             'default': '8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942',
             'c': '8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942',
@@ -381,7 +380,7 @@ class CoreData:
         self.libdir_cross_fixup()
 
     @staticmethod
-    def __load_config_files(options: argparse.Namespace, scratch_dir: str, ftype: str) -> T.List[str]:
+    def __load_config_files(options                    , scratch_dir     , ftype     )               :
         # Need to try and make the passed filenames absolute because when the
         # files are parsed later we'll have chdir()d.
         if ftype == 'cross':
@@ -472,15 +471,15 @@ class CoreData:
         This way everyone can do f.ex, get_option('libdir') and be sure to get
         the library directory relative to prefix.
         '''
-        if option.endswith('dir') and os.path.isabs(value) and \
+        if option.endswith('dir') and os.path.isabs(value) and\
            option not in builtin_dir_noprefix_options:
             # Value must be a subdir of the prefix
             # commonpath will always return a path in the native format, so we
             # must use pathlib.PurePath to do the same conversion before
             # comparing.
             if os.path.commonpath([value, prefix]) != str(PurePath(prefix)):
-                m = 'The value of the {!r} option is {!r} which must be a ' \
-                    'subdir of the prefix {!r}.\nNote that if you pass a ' \
+                m = 'The value of the {!r} option is {!r} which must be a '\
+                    'subdir of the prefix {!r}.\nNote that if you pass a '\
                     'relative path, it is assumed to be a subdir of prefix.'
                 raise MesonException(m.format(option, value, prefix))
             # Convert path to be relative to prefix
@@ -500,13 +499,13 @@ class CoreData:
 
     def init_backend_options(self, backend_name):
         if backend_name == 'ninja':
-            self.backend_options['backend_max_links'] = \
+            self.backend_options['backend_max_links'] =\
                 UserIntegerOption(
                     'Maximum number of linker processes to run or 0 for no '
                     'limit',
                     0, None, 0)
         elif backend_name.startswith('vs'):
-            self.backend_options['backend_startup_project'] = \
+            self.backend_options['backend_startup_project'] =\
                 UserStringOption(
                     'Default project to execute in Visual Studio',
                     '')
@@ -589,7 +588,7 @@ class CoreData:
     @staticmethod
     def get_prefixed_options_per_machine(
         options_per_machine # : PerMachine[T.Dict[str, _V]]]
-    ) -> T.Iterable[T.Dict[str, _V]]:
+    )                               :
         for for_machine in iter(MachineChoice):
             prefix = for_machine.get_prefix()
             yield {
@@ -597,17 +596,17 @@ class CoreData:
                 for k, v in options_per_machine[for_machine].items()
             }
 
-    def _get_all_nonbuiltin_options(self) -> T.Iterable[T.Dict[str, UserOption]]:
+    def _get_all_nonbuiltin_options(self)                                       :
         yield self.backend_options
         yield self.user_options
         yield from self.get_prefixed_options_per_machine(self.compiler_options)
         yield self.base_options
 
-    def _get_all_builtin_options(self) -> T.Dict[str, UserOption]:
+    def _get_all_builtin_options(self)                           :
         yield from self.get_prefixed_options_per_machine(self.builtins_per_machine)
         yield self.builtins
 
-    def get_all_options(self) -> T.Dict[str, UserOption]:
+    def get_all_options(self)                           :
         yield from self._get_all_nonbuiltin_options()
         yield from self._get_all_builtin_options()
 
@@ -618,14 +617,14 @@ class CoreData:
                 try:
                     return opt.validate_value(override_value)
                 except MesonException as e:
-                    raise type(e)(('Validation failed for option %s: ' % option_name) + str(e)) \
+                    raise type(e)(('Validation failed for option %s: ' % option_name) + str(e))\
                         .with_traceback(sys.exc_info()[2])
         raise MesonException('Tried to validate unknown option %s.' % option_name)
 
-    def get_external_args(self, for_machine: MachineChoice, lang):
+    def get_external_args(self, for_machine               , lang):
         return self.compiler_options[for_machine][lang + '_args'].value
 
-    def get_external_link_args(self, for_machine: MachineChoice, lang):
+    def get_external_link_args(self, for_machine               , lang):
         return self.compiler_options[for_machine][lang + '_link_args'].value
 
     def merge_user_options(self, options):
@@ -637,7 +636,7 @@ class CoreData:
                 if type(oldval) != type(value):
                     self.user_options[name] = value
 
-    def is_cross_build(self) -> bool:
+    def is_cross_build(self)        :
         return len(self.cross_files) > 0
 
     def strip_build_option_names(self, options):
@@ -730,8 +729,8 @@ class CoreData:
             if subproject:
                 if not k.startswith(subproject + ':'):
                     continue
-            elif k not in builtin_options.keys() \
-                    and 'build.' + k not in builtin_options_per_machine.keys() \
+            elif k not in builtin_options.keys()\
+                    and 'build.' + k not in builtin_options_per_machine.keys()\
                     and k not in builtin_options_per_machine.keys():
                 if ':' in k:
                     continue
@@ -741,8 +740,8 @@ class CoreData:
 
         self.set_options(options, subproject=subproject)
 
-    def add_lang_args(self, lang: str, comp: T.Type['Compiler'],
-                      for_machine: MachineChoice, env: 'Environment') -> None:
+    def add_lang_args(self, lang     , comp                    ,
+                      for_machine               , env               )        :
         """Add global language arguments that are needed before compiler/linker detection."""
         from .compilers import compilers
 
@@ -756,7 +755,7 @@ class CoreData:
                 o.set_value(env.cmd_line_options[opt_prefix + k])
             self.compiler_options[for_machine].setdefault(k, o)
 
-    def process_new_compiler(self, lang: str, comp: T.Type['Compiler'], env: 'Environment') -> None:
+    def process_new_compiler(self, lang     , comp                    , env               )        :
         from . import compilers
 
         self.compilers[comp.for_machine][lang] = comp
@@ -783,7 +782,7 @@ class CoreData:
             self.base_options[optname] = oobj
         self.emit_base_options_warnings(enabled_opts)
 
-    def emit_base_options_warnings(self, enabled_opts: list):
+    def emit_base_options_warnings(self, enabled_opts      ):
         if 'b_bitcode' in enabled_opts:
             mlog.warning('Base option \'b_bitcode\' is enabled, which is incompatible with many linker options. Incompatible options such as such as \'b_asneeded\' have been disabled.')
             mlog.warning('Please see https://mesonbuild.com/Builtin-options.html#Notes_about_Apple_Bitcode_support for more details.')
@@ -940,29 +939,29 @@ class BuiltinOption(T.Generic[_T, _U]):
     Currently doesn't support UserIntegerOption, or a few other cases.
     """
 
-    def __init__(self, opt_type: T.Type[_U], description: str, default: T.Any, yielding: T.Optional[bool] = None, *,
-                 choices: T.Any = None):
+    def __init__(self, opt_type            , description     , default       , yielding                   = None, *,
+                 choices        = None):
         self.opt_type = opt_type
         self.description = description
         self.default = default
         self.choices = choices
         self.yielding = yielding
 
-    def init_option(self) -> _U:
+    def init_option(self)      :
         """Create an instance of opt_type and return it."""
         keywords = {'yielding': self.yielding, 'value': self.default}
         if self.choices:
             keywords['choices'] = self.choices
         return self.opt_type(self.description, **keywords)
 
-    def _argparse_action(self) -> T.Optional[str]:
+    def _argparse_action(self)                   :
         if self.default is True:
             return 'store_false'
         elif self.default is False:
             return 'store_true'
         return None
 
-    def _argparse_choices(self) -> T.Any:
+    def _argparse_choices(self)         :
         if self.opt_type is UserBooleanOption:
             return [True, False]
         elif self.opt_type is UserFeatureOption:
@@ -970,13 +969,13 @@ class BuiltinOption(T.Generic[_T, _U]):
         return self.choices
 
     @staticmethod
-    def argparse_name_to_arg(name: str) -> str:
+    def argparse_name_to_arg(name     )       :
         if name == 'warning_level':
             return '--warnlevel'
         else:
             return '--' + name.replace('_', '-')
 
-    def prefixed_default(self, name: str, prefix: str = '') -> T.Any:
+    def prefixed_default(self, name     , prefix      = '')         :
         if self.opt_type in [UserComboOption, UserIntegerOption]:
             return self.default
         try:
@@ -985,7 +984,7 @@ class BuiltinOption(T.Generic[_T, _U]):
             pass
         return self.default
 
-    def add_to_argparse(self, name: str, parser: argparse.ArgumentParser, prefix: str, help_suffix: str) -> None:
+    def add_to_argparse(self, name     , parser                         , prefix     , help_suffix     )        :
         kwargs = {}
 
         c = self._argparse_choices()

@@ -23,7 +23,7 @@ from ..mesonlib import MesonException
 
 from ..interpreterbase import stringArgs, noKwargs
 if T.TYPE_CHECKING:
-    from ..interpreter import ModuleState
+    pass
 
 class FSModule(ExtensionModule):
 
@@ -31,14 +31,14 @@ class FSModule(ExtensionModule):
         super().__init__(interpreter)
         self.snippets.add('generate_dub_file')
 
-    def _resolve_dir(self, state: 'ModuleState', arg: str) -> Path:
+    def _resolve_dir(self, state               , arg     )        :
         """
         resolves (makes absolute) a directory relative to calling meson.build,
         if not already absolute
         """
         return Path(state.source_root) / state.subdir / Path(arg).expanduser()
 
-    def _check(self, check: str, state: 'ModuleState', args: T.Sequence[str]) -> ModuleReturnValue:
+    def _check(self, check     , state               , args                 )                     :
         if len(args) != 1:
             raise MesonException('fs.{} takes exactly one argument.'.format(check))
         test_file = self._resolve_dir(state, args[0])
@@ -46,27 +46,27 @@ class FSModule(ExtensionModule):
 
     @stringArgs
     @noKwargs
-    def exists(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def exists(self, state               , args                 , kwargs      )                     :
         return self._check('exists', state, args)
 
     @stringArgs
     @noKwargs
-    def is_symlink(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def is_symlink(self, state               , args                 , kwargs      )                     :
         return self._check('is_symlink', state, args)
 
     @stringArgs
     @noKwargs
-    def is_file(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def is_file(self, state               , args                 , kwargs      )                     :
         return self._check('is_file', state, args)
 
     @stringArgs
     @noKwargs
-    def is_dir(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def is_dir(self, state               , args                 , kwargs      )                     :
         return self._check('is_dir', state, args)
 
     @stringArgs
     @noKwargs
-    def hash(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def hash(self, state               , args                 , kwargs      )                     :
         if len(args) != 2:
             raise MesonException('method takes exactly two arguments.')
         file = self._resolve_dir(state, args[0])
@@ -82,7 +82,7 @@ class FSModule(ExtensionModule):
 
     @stringArgs
     @noKwargs
-    def size(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def size(self, state               , args                 , kwargs      )                     :
         if len(args) != 1:
             raise MesonException('method takes exactly one argument.')
         file = self._resolve_dir(state, args[0])
@@ -95,7 +95,7 @@ class FSModule(ExtensionModule):
 
     @stringArgs
     @noKwargs
-    def is_samepath(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def is_samepath(self, state               , args                 , kwargs      )                     :
         if len(args) != 2:
             raise MesonException('fs.is_samepath takes exactly two arguments.')
         file1 = self._resolve_dir(state, args[0])
@@ -111,7 +111,7 @@ class FSModule(ExtensionModule):
 
     @stringArgs
     @noKwargs
-    def replace_suffix(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def replace_suffix(self, state               , args                 , kwargs      )                     :
         if len(args) != 2:
             raise MesonException('method takes exactly two arguments.')
         original = PurePath(args[0])
@@ -120,7 +120,7 @@ class FSModule(ExtensionModule):
 
     @stringArgs
     @noKwargs
-    def parent(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def parent(self, state               , args                 , kwargs      )                     :
         if len(args) != 1:
             raise MesonException('method takes exactly one argument.')
         original = PurePath(args[0])
@@ -129,12 +129,12 @@ class FSModule(ExtensionModule):
 
     @stringArgs
     @noKwargs
-    def name(self, state: 'ModuleState', args: T.Sequence[str], kwargs: dict) -> ModuleReturnValue:
+    def name(self, state               , args                 , kwargs      )                     :
         if len(args) != 1:
             raise MesonException('method takes exactly one argument.')
         original = PurePath(args[0])
         new = original.name
         return ModuleReturnValue(str(new), [])
 
-def initialize(*args, **kwargs) -> FSModule:
+def initialize(*args, **kwargs)            :
     return FSModule(*args, **kwargs)

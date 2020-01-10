@@ -17,19 +17,19 @@ import shutil
 import subprocess
 import typing as T
 
-from ..mesonlib import EnvironmentException, MachineChoice
+from ..mesonlib import EnvironmentException
 from .compilers import Compiler, java_buildtype_args
 from .mixins.islinker import BasicLinkerIsCompilerMixin
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
+    pass
 
 class JavaCompiler(BasicLinkerIsCompilerMixin, Compiler):
 
     language = 'java'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 info: 'MachineInfo'):
+    def __init__(self, exelist, version, for_machine               ,
+                 info               ):
         super().__init__(exelist, version, for_machine, info)
         self.id = 'unknown'
         self.is_cross = False
@@ -108,10 +108,10 @@ class JavaCompiler(BasicLinkerIsCompilerMixin, Compiler):
             if pe.returncode != 0:
                 raise EnvironmentException('Executables created by Java compiler %s are not runnable.' % self.name_string())
         else:
-            m = "Java Virtual Machine wasn't found, but it's needed by Meson. " \
-                "Please install a JRE.\nIf you have specific needs where this " \
-                "requirement doesn't make sense, please open a bug at " \
-                "https://github.com/mesonbuild/meson/issues/new and tell us " \
+            m = "Java Virtual Machine wasn't found, but it's needed by Meson. "\
+                "Please install a JRE.\nIf you have specific needs where this "\
+                "requirement doesn't make sense, please open a bug at "\
+                "https://github.com/mesonbuild/meson/issues/new and tell us "\
                 "all about it."
             raise EnvironmentException(m)
 

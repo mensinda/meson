@@ -17,12 +17,10 @@
 
 from .common import CMakeException, CMakeConfiguration, CMakeBuildFile
 from .executor import CMakeExecutor
-from ..environment import Environment
 from ..mesonlib import MachineChoice
 from .. import mlog
 from contextlib import contextmanager
 from subprocess import Popen, PIPE, TimeoutExpired
-import typing as T
 import json
 import os
 
@@ -49,20 +47,20 @@ CMAKE_REPLY_TYPES = {
 # Base CMake server message classes
 
 class MessageBase:
-    def __init__(self, msg_type: str, cookie: str):
+    def __init__(self, msg_type     , cookie     ):
         self.type = msg_type
         self.cookie = cookie
 
-    def to_dict(self) -> dict:
+    def to_dict(self)        :
         return {'type': self.type, 'cookie': self.cookie}
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.warning('CMake server message of type', mlog.bold(type(self).__name__), 'has no log function')
 
 class RequestBase(MessageBase):
     cookie_counter = 0
 
-    def __init__(self, msg_type: str):
+    def __init__(self, msg_type     ):
         super().__init__(msg_type, self.gen_cookie())
 
     @staticmethod
@@ -71,50 +69,50 @@ class RequestBase(MessageBase):
         return 'meson_{}'.format(RequestBase.cookie_counter)
 
 class ReplyBase(MessageBase):
-    def __init__(self, cookie: str, in_reply_to: str):
+    def __init__(self, cookie     , in_reply_to     ):
         super().__init__('reply', cookie)
         self.in_reply_to = in_reply_to
 
 class SignalBase(MessageBase):
-    def __init__(self, cookie: str, signal_name: str):
+    def __init__(self, cookie     , signal_name     ):
         super().__init__('signal', cookie)
         self.signal_name = signal_name
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.log(mlog.bold('CMake signal:'), mlog.yellow(self.signal_name))
 
 # Special Message classes
 
 class Error(MessageBase):
-    def __init__(self, cookie: str, message: str):
+    def __init__(self, cookie     , message     ):
         super().__init__('error', cookie)
         self.message = message
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.error(mlog.bold('CMake server error:'), mlog.red(self.message))
 
 class Message(MessageBase):
-    def __init__(self, cookie: str, message: str):
+    def __init__(self, cookie     , message     ):
         super().__init__('message', cookie)
         self.message = message
 
-    def log(self) -> None:
+    def log(self)        :
         #mlog.log(mlog.bold('CMake:'), self.message)
         pass
 
 class Progress(MessageBase):
-    def __init__(self, cookie: str):
+    def __init__(self, cookie     ):
         super().__init__('progress', cookie)
 
-    def log(self) -> None:
+    def log(self)        :
         pass
 
 class MessageHello(MessageBase):
-    def __init__(self, supported_protocol_versions: T.List[dict]):
+    def __init__(self, supported_protocol_versions              ):
         super().__init__('hello', '')
         self.supported_protocol_versions = supported_protocol_versions
 
-    def supports(self, major: int, minor: T.Optional[int] = None) -> bool:
+    def supports(self, major     , minor                  = None)        :
         for i in self.supported_protocol_versions:
             if major == i['major']:
                 if minor is None or minor == i['minor']:
@@ -124,7 +122,7 @@ class MessageHello(MessageBase):
 # Request classes
 
 class RequestHandShake(RequestBase):
-    def __init__(self, src_dir: str, build_dir: str, generator: str, vers_major: int, vers_minor: T.Optional[int] = None):
+    def __init__(self, src_dir     , build_dir     , generator     , vers_major     , vers_minor                  = None):
         super().__init__('handshake')
         self.src_dir = src_dir
         self.build_dir = build_dir
@@ -132,7 +130,7 @@ class RequestHandShake(RequestBase):
         self.vers_major = vers_major
         self.vers_minor = vers_minor
 
-    def to_dict(self) -> dict:
+    def to_dict(self)        :
         vers = {'major': self.vers_major}
         if self.vers_minor is not None:
             vers['minor'] = self.vers_minor
@@ -150,11 +148,11 @@ class RequestHandShake(RequestBase):
         }
 
 class RequestConfigure(RequestBase):
-    def __init__(self, args: T.Optional[T.List[str]] = None):
+    def __init__(self, args                          = None):
         super().__init__('configure')
         self.args = args
 
-    def to_dict(self) -> dict:
+    def to_dict(self)        :
         res = super().to_dict()
         if self.args:
             res['cacheArguments'] = self.args
@@ -175,25 +173,25 @@ class RequestCodeModel(RequestBase):
 # Reply classes
 
 class ReplyHandShake(ReplyBase):
-    def __init__(self, cookie: str):
+    def __init__(self, cookie     ):
         super().__init__(cookie, 'handshake')
 
 class ReplyConfigure(ReplyBase):
-    def __init__(self, cookie: str):
+    def __init__(self, cookie     ):
         super().__init__(cookie, 'configure')
 
 class ReplyCompute(ReplyBase):
-    def __init__(self, cookie: str):
+    def __init__(self, cookie     ):
         super().__init__(cookie, 'compute')
 
 class ReplyCMakeInputs(ReplyBase):
-    def __init__(self, cookie: str, cmake_root: str, src_dir: str, build_files: T.List[CMakeBuildFile]):
+    def __init__(self, cookie     , cmake_root     , src_dir     , build_files                        ):
         super().__init__(cookie, 'cmakeInputs')
         self.cmake_root = cmake_root
         self.src_dir = src_dir
         self.build_files = build_files
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.log('CMake root: ', mlog.bold(self.cmake_root))
         mlog.log('Source dir: ', mlog.bold(self.src_dir))
         mlog.log('Build files:', mlog.bold(str(len(self.build_files))))
@@ -202,13 +200,13 @@ class ReplyCMakeInputs(ReplyBase):
                 mlog.log(str(i))
 
 class ReplyCodeModel(ReplyBase):
-    def __init__(self, data: dict):
+    def __init__(self, data      ):
         super().__init__(data['cookie'], 'codemodel')
         self.configs = []
         for i in data['configurations']:
             self.configs += [CMakeConfiguration(i)]
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.log('CMake code mode:')
         for idx, i in enumerate(self.configs):
             mlog.log('Configuration {}:'.format(idx))
@@ -218,7 +216,7 @@ class ReplyCodeModel(ReplyBase):
 # Main client class
 
 class CMakeClient:
-    def __init__(self, env: Environment):
+    def __init__(self, env             ):
         self.env = env
         self.proc = None
         self.type_map = {
@@ -238,7 +236,7 @@ class CMakeClient:
             'codemodel': lambda data: ReplyCodeModel(data),
         }
 
-    def readMessageRaw(self) -> dict:
+    def readMessageRaw(self)        :
         assert(self.proc is not None)
         rawData = []
         begin = False
@@ -260,7 +258,7 @@ class CMakeClient:
             return json.loads('\n'.join(rawData))
         raise CMakeException('Failed to read data from the CMake server')
 
-    def readMessage(self) -> MessageBase:
+    def readMessage(self)               :
         raw_data = self.readMessageRaw()
         if 'type' not in raw_data:
             raise CMakeException('The "type" attribute is missing from the message')
@@ -273,12 +271,12 @@ class CMakeClient:
                 raise CMakeException('Key "{}" is missing from CMake server message type {}'.format(i, msg_type))
         return func(raw_data)
 
-    def writeMessage(self, msg: MessageBase) -> None:
+    def writeMessage(self, msg             )        :
         raw_data = '\n{}\n{}\n{}\n'.format(CMAKE_SERVER_BEGIN_STR, json.dumps(msg.to_dict(), indent=2), CMAKE_SERVER_END_STR)
         self.proc.stdin.write(raw_data.encode('ascii'))
         self.proc.stdin.flush()
 
-    def query(self, request: RequestBase) -> MessageBase:
+    def query(self, request             )               :
         self.writeMessage(request)
         while True:
             reply = self.readMessage()
@@ -287,7 +285,7 @@ class CMakeClient:
 
             reply.log()
 
-    def query_checked(self, request: RequestBase, message: str) -> ReplyBase:
+    def query_checked(self, request             , message     )             :
         reply = self.query(request)
         h = mlog.green('SUCCEEDED') if reply.type == 'reply' else mlog.red('FAILED')
         mlog.log(message + ':', h)
@@ -296,7 +294,7 @@ class CMakeClient:
             raise CMakeException('CMake server query failed')
         return reply
 
-    def do_handshake(self, src_dir: str, build_dir: str, generator: str, vers_major: int, vers_minor: T.Optional[int] = None) -> None:
+    def do_handshake(self, src_dir     , build_dir     , generator     , vers_major     , vers_minor                  = None)        :
         # CMake prints the hello message on startup
         msg = self.readMessage()
         if not isinstance(msg, MessageHello):
@@ -305,7 +303,7 @@ class CMakeClient:
         request = RequestHandShake(src_dir, build_dir, generator, vers_major, vers_minor)
         self.query_checked(request, 'CMake server handshake')
 
-    def resolve_type_reply(self, data: dict) -> ReplyBase:
+    def resolve_type_reply(self, data      )             :
         reply_type = data['inReplyTo']
         func = self.reply_map.get(reply_type, None)
         if not func:
@@ -315,7 +313,7 @@ class CMakeClient:
                 raise CMakeException('Key "{}" is missing from CMake server message type {}'.format(i, type))
         return func(data)
 
-    def resolve_reply_cmakeInputs(self, data: dict) -> ReplyCMakeInputs:
+    def resolve_reply_cmakeInputs(self, data      )                    :
         files = []
         for i in data['buildFiles']:
             for j in i['sources']:
@@ -330,7 +328,7 @@ class CMakeClient:
         finally:
             self.shutdown()
 
-    def startup(self) -> None:
+    def startup(self)        :
         if self.proc is not None:
             raise CMakeException('The CMake server was already started')
         for_machine = MachineChoice.HOST # TODO make parameter
@@ -341,7 +339,7 @@ class CMakeClient:
         mlog.debug('Starting CMake server with CMake', mlog.bold(' '.join(cmake_exe.get_command())), 'version', mlog.cyan(cmake_exe.version()))
         self.proc = Popen(cmake_exe.get_command() + ['-E', 'server', '--experimental', '--debug'], stdin=PIPE, stdout=PIPE)
 
-    def shutdown(self) -> None:
+    def shutdown(self)        :
         if self.proc is None:
             return
 

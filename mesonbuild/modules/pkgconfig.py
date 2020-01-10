@@ -205,8 +205,8 @@ class DependenciesHelper:
                 # Don't de-dup unknown strings to avoid messing up arguments like:
                 # ['-framework', 'CoreAudio', '-framework', 'CoreMedia']
                 known_flags = ['-pthread']
-                cannot_dedup = libs and isinstance(x, str) and \
-                    not x.startswith(('-l', '-L')) and \
+                cannot_dedup = libs and isinstance(x, str) and\
+                    not x.startswith(('-l', '-L')) and\
                     x not in known_flags
                 if x not in result or cannot_dedup:
                     result.append(x)
@@ -297,8 +297,8 @@ class PkgConfigModule(ExtensionModule):
                 ofile.write('Conflicts: {}\n'.format(' '.join(conflicts)))
 
             def generate_libs_flags(libs):
-                msg = 'Library target {0!r} has {1!r} set. Compilers ' \
-                      'may not find it from its \'-l{2}\' linker flag in the ' \
+                msg = 'Library target {0!r} has {1!r} set. Compilers '\
+                      'may not find it from its \'-l{2}\' linker flag in the '\
                       '{3!r} pkg-config file.'
                 Lflags = []
                 for l in libs:

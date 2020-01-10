@@ -83,7 +83,7 @@ def create_sample(options):
         raise RuntimeError('Unreachable code')
     print(info_message)
 
-def autodetect_options(options, sample: bool = False):
+def autodetect_options(options, sample       = False):
     if not options.name:
         options.name = Path().resolve().stem
         if not re.match('[a-zA-Z_][a-zA-Z0-9]*', options.name) and sample:
@@ -188,7 +188,7 @@ def add_arguments(parser):
                         choices=['executable', 'library'])
     parser.add_argument('--version', default='0.1')
 
-def run(options) -> int:
+def run(options)       :
     if not glob('*'):
         autodetect_options(options, sample=True)
         if not options.language:

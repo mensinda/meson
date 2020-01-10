@@ -73,7 +73,7 @@ def set_meson_command(mainfile):
     if 'MESON_COMMAND_TESTS' in os.environ:
         mlog.log('meson_command is {!r}'.format(meson_command))
 
-def is_ascii_string(astring) -> bool:
+def is_ascii_string(astring)        :
     try:
         if isinstance(astring, str):
             astring.encode('ascii')
@@ -211,17 +211,17 @@ class FileMode:
         return perms
 
 class File:
-    def __init__(self, is_built: bool, subdir: str, fname: str):
+    def __init__(self, is_built      , subdir     , fname     ):
         self.is_built = is_built
         self.subdir = subdir
         self.fname = fname
         assert(isinstance(self.subdir, str))
         assert(isinstance(self.fname, str))
 
-    def __str__(self) -> str:
+    def __str__(self)       :
         return self.relative_name()
 
-    def __repr__(self) -> str:
+    def __repr__(self)       :
         ret = '<File: {0}'
         if not self.is_built:
             ret += ' (not built)'
@@ -230,47 +230,47 @@ class File:
 
     @staticmethod
     @lru_cache(maxsize=None)
-    def from_source_file(source_root: str, subdir: str, fname: str):
+    def from_source_file(source_root     , subdir     , fname     ):
         if not os.path.isfile(os.path.join(source_root, subdir, fname)):
             raise MesonException('File %s does not exist.' % fname)
         return File(False, subdir, fname)
 
     @staticmethod
-    def from_built_file(subdir: str, fname: str):
+    def from_built_file(subdir     , fname     ):
         return File(True, subdir, fname)
 
     @staticmethod
-    def from_absolute_file(fname: str):
+    def from_absolute_file(fname     ):
         return File(False, '', fname)
 
     @lru_cache(maxsize=None)
-    def rel_to_builddir(self, build_to_src: str) -> str:
+    def rel_to_builddir(self, build_to_src     )       :
         if self.is_built:
             return self.relative_name()
         else:
             return os.path.join(build_to_src, self.subdir, self.fname)
 
     @lru_cache(maxsize=None)
-    def absolute_path(self, srcdir: str, builddir: str) -> str:
+    def absolute_path(self, srcdir     , builddir     )       :
         absdir = srcdir
         if self.is_built:
             absdir = builddir
         return os.path.join(absdir, self.relative_name())
 
-    def endswith(self, ending: str) -> bool:
+    def endswith(self, ending     )        :
         return self.fname.endswith(ending)
 
-    def split(self, s: str) -> T.List[str]:
+    def split(self, s     )               :
         return self.fname.split(s)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other)        :
         return (self.fname, self.subdir, self.is_built) == (other.fname, other.subdir, other.is_built)
 
-    def __hash__(self) -> int:
+    def __hash__(self)       :
         return hash((self.fname, self.subdir, self.is_built))
 
     @lru_cache(maxsize=None)
-    def relative_name(self) -> str:
+    def relative_name(self)       :
         return os.path.join(self.subdir, self.fname)
 
 
@@ -332,20 +332,20 @@ class MachineChoice(OrderedEnum):
 
 
 class PerMachine(T.Generic[_T]):
-    def __init__(self, build: _T, host: _T):
+    def __init__(self, build    , host    ):
         self.build = build
         self.host = host
 
-    def __getitem__(self, machine: MachineChoice) -> _T:
+    def __getitem__(self, machine               )      :
         return {
             MachineChoice.BUILD:  self.build,
             MachineChoice.HOST:   self.host,
         }[machine]
 
-    def __setitem__(self, machine: MachineChoice, val: _T) -> None:
+    def __setitem__(self, machine               , val    )        :
         setattr(self, machine.get_lower_case_name(), val)
 
-    def miss_defaulting(self) -> "PerMachineDefaultable[T.Optional[_T]]":
+    def miss_defaulting(self)                                           :
         """Unset definition duplicated from their previous to None
 
         This is the inverse of ''default_missing''. By removing defaulted
@@ -367,11 +367,11 @@ class PerThreeMachine(PerMachine[_T]):
     need to computer the `target` field so we don't bother overriding the
     `__getitem__`/`__setitem__` methods.
     """
-    def __init__(self, build: _T, host: _T, target: _T):
+    def __init__(self, build    , host    , target    ):
         super().__init__(build, host)
         self.target = target
 
-    def miss_defaulting(self) -> "PerThreeMachineDefaultable[T.Optional[_T]]":
+    def miss_defaulting(self)                                                :
         """Unset definition duplicated from their previous to None
 
         This is the inverse of ''default_missing''. By removing defaulted
@@ -388,16 +388,16 @@ class PerThreeMachine(PerMachine[_T]):
             unfreeze.host = None
         return unfreeze
 
-    def matches_build_machine(self, machine: MachineChoice) -> bool:
+    def matches_build_machine(self, machine               )        :
         return self.build == self[machine]
 
 class PerMachineDefaultable(PerMachine[T.Optional[_T]]):
     """Extends `PerMachine` with the ability to default from `None`s.
     """
-    def __init__(self) -> None:
+    def __init__(self)        :
         super().__init__(None, None)
 
-    def default_missing(self) -> "PerMachine[T.Optional[_T]]":
+    def default_missing(self)                                :
         """Default host to build
 
         This allows just specifying nothing in the native case, and just host in the
@@ -412,10 +412,10 @@ class PerMachineDefaultable(PerMachine[T.Optional[_T]]):
 class PerThreeMachineDefaultable(PerMachineDefaultable, PerThreeMachine[T.Optional[_T]]):
     """Extends `PerThreeMachine` with the ability to default from `None`s.
     """
-    def __init__(self) -> None:
+    def __init__(self)        :
         PerThreeMachine.__init__(self, None, None, None)
 
-    def default_missing(self) -> "PerThreeMachine[T.Optional[_T]]":
+    def default_missing(self)                                     :
         """Default host to build and target to host.
 
         This allows just specifying nothing in the native case, just host in the
@@ -430,44 +430,44 @@ class PerThreeMachineDefaultable(PerMachineDefaultable, PerThreeMachine[T.Option
         return freeze
 
 
-def is_sunos() -> bool:
+def is_sunos()        :
     return platform.system().lower() == 'sunos'
 
-def is_osx() -> bool:
+def is_osx()        :
     return platform.system().lower() == 'darwin'
 
-def is_linux() -> bool:
+def is_linux()        :
     return platform.system().lower() == 'linux'
 
-def is_android() -> bool:
+def is_android()        :
     return platform.system().lower() == 'android'
 
-def is_haiku() -> bool:
+def is_haiku()        :
     return platform.system().lower() == 'haiku'
 
-def is_openbsd() -> bool:
+def is_openbsd()        :
     return platform.system().lower() == 'openbsd'
 
-def is_windows() -> bool:
+def is_windows()        :
     platname = platform.system().lower()
     return platname == 'windows' or 'mingw' in platname
 
-def is_cygwin() -> bool:
+def is_cygwin()        :
     return platform.system().lower().startswith('cygwin')
 
-def is_debianlike() -> bool:
+def is_debianlike()        :
     return os.path.isfile('/etc/debian_version')
 
-def is_dragonflybsd() -> bool:
+def is_dragonflybsd()        :
     return platform.system().lower() == 'dragonfly'
 
-def is_netbsd() -> bool:
+def is_netbsd()        :
     return platform.system().lower() == 'netbsd'
 
-def is_freebsd() -> bool:
+def is_freebsd()        :
     return platform.system().lower() == 'freebsd'
 
-def exe_exists(arglist: T.List[str]) -> bool:
+def exe_exists(arglist             )        :
     try:
         if subprocess.run(arglist, timeout=10).returncode == 0:
             return True
@@ -578,7 +578,7 @@ class Version:
         # otherwise, the version with a suffix remaining is greater
         return comparator(len(self._v), len(other._v))
 
-def _version_extract_cmpop(vstr2: str) -> T.Tuple[T.Callable[[T.Any, T.Any], bool], str]:
+def _version_extract_cmpop(vstr2     )                                                  :
     if vstr2.startswith('>='):
         cmpop = operator.ge
         vstr2 = vstr2[2:]
@@ -605,7 +605,7 @@ def _version_extract_cmpop(vstr2: str) -> T.Tuple[T.Callable[[T.Any, T.Any], boo
 
     return (cmpop, vstr2)
 
-def version_compare(vstr1: str, vstr2: str) -> bool:
+def version_compare(vstr1     , vstr2     )        :
     (cmpop, vstr2) = _version_extract_cmpop(vstr2)
     return cmpop(Version(vstr1), Version(vstr2))
 
@@ -623,7 +623,7 @@ def version_compare_many(vstr1, conditions):
 
 # determine if the minimum version satisfying the condition |condition| exceeds
 # the minimum version for a feature |minimum|
-def version_compare_condition_with_min(condition: str, minimum: str) -> bool:
+def version_compare_condition_with_min(condition     , minimum     )        :
     if condition.startswith('>='):
         cmpop = operator.le
         condition = condition[2:]
@@ -686,7 +686,7 @@ def default_libexecdir():
 def default_prefix():
     return 'c:/' if is_windows() else '/usr/local'
 
-def get_library_dirs() -> T.List[str]:
+def get_library_dirs()               :
     if is_windows():
         return ['C:/mingw/lib'] # TODO: get programmatically
     if is_osx():
@@ -770,7 +770,7 @@ if is_windows():
         result += (num_backslashes * 2) * '\\' + '"'
         return result
 
-    def split_args(cmd: T.Sequence[str]) -> T.List[str]:
+    def split_args(cmd                 )               :
         result = []
         arg = ''
         num_backslashes = 0
@@ -842,7 +842,7 @@ def do_replacement(regex, line, variable_format, confdata):
                 elif isinstance(var, int):
                     var = str(var)
                 else:
-                    msg = 'Tried to replace variable {!r} value with ' \
+                    msg = 'Tried to replace variable {!r} value with '\
                           'something other than a string or int: {!r}'
                     raise MesonException(msg.format(varname, var))
             else:
@@ -976,9 +976,9 @@ def replace_if_different(dst, dst_tmp):
     else:
         os.unlink(dst_tmp)
 
-def listify(item: T.Any,
-            flatten: bool = True,
-            unholder: bool = False) -> T.List[T.Any]:
+def listify(item       ,
+            flatten       = True,
+            unholder       = False)                 :
     '''
     Returns a list with all args embedded in a list if they are not a list.
     This function preserves order.
@@ -1018,8 +1018,8 @@ def extract_as_list(dict_object, *keys, pop=False, **kwargs):
         result.append(listify(fetch(key, []), **kwargs))
     return result
 
-def typeslistify(item: 'T.Union[_T, T.List[_T]]',
-                 types: 'T.Union[T.Type[_T], T.Tuple[T.Type[_T]]]') -> T.List[_T]:
+def typeslistify(item                           ,
+                 types                                            )              :
     '''
     Ensure that type(@item) is one of @types or a
     list of items all of which are of type @types
@@ -1033,7 +1033,7 @@ def typeslistify(item: 'T.Union[_T, T.List[_T]]',
             raise MesonException('List item must be one of {!r}'.format(types))
     return item
 
-def stringlistify(item: T.Union[str, T.List[str]]) -> T.List[str]:
+def stringlistify(item                           )               :
     return typeslistify(item, str)
 
 def expand_arguments(args):
@@ -1060,10 +1060,10 @@ def partition(pred, iterable):
     t1, t2 = tee(iterable)
     return filterfalse(pred, t1), filter(pred, t2)
 
-def Popen_safe(args: T.List[str], write: T.Optional[str] = None,
-               stdout: T.Union[T.BinaryIO, int] = subprocess.PIPE,
-               stderr: T.Union[T.BinaryIO, int] = subprocess.PIPE,
-               **kwargs: T.Any) -> T.Tuple[subprocess.Popen, str, str]:
+def Popen_safe(args             , write                  = None,
+               stdout                           = subprocess.PIPE,
+               stderr                           = subprocess.PIPE,
+               **kwargs       )                                       :
     import locale
     encoding = locale.getpreferredencoding()
     if sys.version_info < (3, 6) or not sys.stdout.encoding or encoding.upper() != 'UTF-8':
@@ -1073,10 +1073,10 @@ def Popen_safe(args: T.List[str], write: T.Optional[str] = None,
     o, e = p.communicate(write)
     return p, o, e
 
-def Popen_safe_legacy(args: T.List[str], write: T.Optional[str] = None,
-                      stdout: T.Union[T.BinaryIO, int] = subprocess.PIPE,
-                      stderr: T.Union[T.BinaryIO, int] = subprocess.PIPE,
-                      **kwargs: T.Any) -> T.Tuple[subprocess.Popen, str, str]:
+def Popen_safe_legacy(args             , write                  = None,
+                      stdout                           = subprocess.PIPE,
+                      stderr                           = subprocess.PIPE,
+                      **kwargs       )                                       :
     p = subprocess.Popen(args, universal_newlines=False, close_fds=False,
                          stdout=stdout, stderr=stderr, **kwargs)
     input_ = None  # type: T.Optional[bytes]
@@ -1324,10 +1324,10 @@ def detect_subprojects(spdir_name, current_dir='', result=None):
 #
 # This would more accurately embody what this funcitonc an handle, but we
 # don't have that yet, so instead we'll do some casting to work around it
-def get_error_location_string(fname: str, lineno: str) -> str:
+def get_error_location_string(fname     , lineno     )       :
     return '{}:{}:'.format(fname, lineno)
 
-def substring_is_in_list(substr: str, strlist: T.List[str]) -> bool:
+def substring_is_in_list(substr     , strlist             )        :
     for s in strlist:
         if substr in s:
             return True
@@ -1398,7 +1398,7 @@ class BuildDirLock:
             msvcrt.locking(self.lockfile.fileno(), msvcrt.LK_UNLCK, 1)
         self.lockfile.close()
 
-def relpath(path: str, start: str) -> str:
+def relpath(path     , start     )       :
     # On Windows a relative path can't be evaluated for paths on two different
     # drives (i.e. c:\foo and f:\bar).  The only thing left to do is to use the
     # original absolute path.

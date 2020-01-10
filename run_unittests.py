@@ -1146,7 +1146,7 @@ class InternalTests(unittest.TestCase):
 
     def test_log_once(self):
         f = io.StringIO()
-        with mock.patch('mesonbuild.mlog.log_file', f), \
+        with mock.patch('mesonbuild.mlog.log_file', f),\
                 mock.patch('mesonbuild.mlog._logged_once', set()):
             mesonbuild.mlog.log_once('foo')
             mesonbuild.mlog.log_once('foo')
@@ -1155,7 +1155,7 @@ class InternalTests(unittest.TestCase):
 
     def test_log_once_ansi(self):
         f = io.StringIO()
-        with mock.patch('mesonbuild.mlog.log_file', f), \
+        with mock.patch('mesonbuild.mlog.log_file', f),\
                 mock.patch('mesonbuild.mlog._logged_once', set()):
             mesonbuild.mlog.log_once(mesonbuild.mlog.bold('foo'))
             mesonbuild.mlog.log_once(mesonbuild.mlog.bold('foo'))
@@ -1391,7 +1391,7 @@ class BasePlatformTests(unittest.TestCase):
         self.wrap_command = self.meson_command + ['wrap']
         self.rewrite_command = self.meson_command + ['rewrite']
         # Backend-specific build commands
-        self.build_command, self.clean_command, self.test_command, self.install_command, \
+        self.build_command, self.clean_command, self.test_command, self.install_command,\
             self.uninstall_command = get_backend_commands(self.backend)
         # Test directories
         self.common_test_dir = os.path.join(src_root, 'test cases/common')
@@ -4322,8 +4322,8 @@ class FailureTests(BasePlatformTests):
             # Look for pkg-config, cache it, then
             # Use cached pkg-config without erroring out, then
             # Use cached pkg-config to error out
-            code = "dependency('foobarrr', method : 'pkg-config', required : false)\n" \
-                "dependency('foobarrr2', method : 'pkg-config', required : false)\n" \
+            code = "dependency('foobarrr', method : 'pkg-config', required : false)\n"\
+                "dependency('foobarrr2', method : 'pkg-config', required : false)\n"\
                 "dependency('sdl2', method : 'pkg-config')"
             self.assertMesonRaises(code, self.nopkg)
 
@@ -4623,7 +4623,7 @@ class WindowsTests(BasePlatformTests):
 
         self.assertTrue('prog.pdb' in files)
 
-    def _check_ld(self, name: str, lang: str, expected: str) -> None:
+    def _check_ld(self, name     , lang     , expected     )        :
         if not shutil.which(name):
             raise unittest.SkipTest('Could not find {}.'.format(name))
         with mock.patch.dict(os.environ, {'LD': name}):
@@ -5051,7 +5051,7 @@ class LinuxlikeTests(BasePlatformTests):
             Oargs = [arg for arg in cmd if arg.startswith('-O')]
             self.assertEqual(Oargs, [Oflag, '-O0'])
 
-    def _test_stds_impl(self, testdir, compiler, p: str):
+    def _test_stds_impl(self, testdir, compiler, p     ):
         lang_std = p + '_std'
 
         has_cpp17 = (compiler.get_id() not in {'clang', 'gcc'} or
@@ -5873,7 +5873,7 @@ c = ['{0}']
         self.build()
         self.run_tests()
 
-    def _check_ld(self, check: str, name: str, lang: str, expected: str) -> None:
+    def _check_ld(self, check     , name     , lang     , expected     )        :
         if is_sunos():
             raise unittest.SkipTest('Solaris currently cannot override the linker.')
         if not shutil.which(check):
@@ -7103,7 +7103,7 @@ class TAPParserTests(unittest.TestCase):
         self.assert_last(events)
 
 
-def _clang_at_least(compiler, minver: str, apple_minver: str) -> bool:
+def _clang_at_least(compiler, minver     , apple_minver     )        :
     """
     check that Clang compiler is at least a specified version, whether AppleClang or regular Clang
 
@@ -7164,7 +7164,6 @@ def main():
         return subprocess.run(python_command + ['-m', 'pytest'] + pytest_args).returncode
     except ImportError:
         print('pytest-xdist not found, using unittest instead')
-        pass
     # All attempts at locating pytest failed, fall back to plain unittest.
     cases = ['InternalTests', 'DataTests', 'AllPlatformTests', 'FailureTests',
              'PythonTests', 'NativeFileTests', 'RewriterTests', 'CrossFileTests',

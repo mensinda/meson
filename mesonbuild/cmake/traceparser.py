@@ -35,7 +35,7 @@ class CMakeTraceLine:
         return s.format(self.file, self.line, self.func, self.args)
 
 class CMakeTarget:
-    def __init__(self, name, target_type, properties=None, imported: bool = False, tline: T.Optional[CMakeTraceLine] = None):
+    def __init__(self, name, target_type, properties=None, imported       = False, tline                             = None):
         if properties is None:
             properties = {}
         self.name = name
@@ -60,7 +60,7 @@ class CMakeGeneratorTarget(CMakeTarget):
         self.working_dir = None  # type: T.Optional[str]
 
 class CMakeTraceParser:
-    def __init__(self, permissive: bool = False):
+    def __init__(self, permissive       = False):
         # Dict of CMake variables: '<var_name>': ['list', 'of', 'values']
         self.vars = {}
 
@@ -72,7 +72,7 @@ class CMakeTraceParser:
 
         self.permissive = permissive  # type: bool
 
-    def parse(self, trace: str) -> None:
+    def parse(self, trace     )        :
         # First parse the trace
         lexer1 = self._lex_trace(trace)
 
@@ -101,7 +101,7 @@ class CMakeTraceParser:
             if(fn):
                 fn(l)
 
-    def get_first_cmake_var_of(self, var_list: T.List[str]) -> T.List[str]:
+    def get_first_cmake_var_of(self, var_list             )               :
         # Return the first found CMake variable in list var_list
         for i in var_list:
             if i in self.vars:
@@ -109,7 +109,7 @@ class CMakeTraceParser:
 
         return []
 
-    def get_cmake_var(self, var: str) -> T.List[str]:
+    def get_cmake_var(self, var     )               :
         # Return the value of the CMake variable var or an empty list if var does not exist
         if var in self.vars:
             return self.vars[var]
@@ -127,7 +127,7 @@ class CMakeTraceParser:
             return True
         return False
 
-    def _gen_exception(self, function: str, error: str, tline: CMakeTraceLine) -> None:
+    def _gen_exception(self, function     , error     , tline                )        :
         # Generate an exception if the parser is not in permissive mode
 
         if self.permissive:
@@ -135,7 +135,7 @@ class CMakeTraceParser:
             return None
         raise CMakeException('CMake: {}() {}\n{}'.format(function, error, tline))
 
-    def _cmake_set(self, tline: CMakeTraceLine) -> None:
+    def _cmake_set(self, tline                )        :
         """Handler for the CMake set() function in all variaties.
 
         comes in three flavors:
@@ -181,7 +181,7 @@ class CMakeTraceParser:
         else:
             self.vars[identifier] = value.split(';')
 
-    def _cmake_unset(self, tline: CMakeTraceLine):
+    def _cmake_unset(self, tline                ):
         # DOC: https://cmake.org/cmake/help/latest/command/unset.html
         if len(tline.args) < 1:
             return self._gen_exception('unset', 'requires at least one argument', tline)
@@ -189,7 +189,7 @@ class CMakeTraceParser:
         if tline.args[0] in self.vars:
             del self.vars[tline.args[0]]
 
-    def _cmake_add_executable(self, tline: CMakeTraceLine):
+    def _cmake_add_executable(self, tline                ):
         # DOC: https://cmake.org/cmake/help/latest/command/add_executable.html
         args = list(tline.args) # Make a working copy
 
@@ -204,7 +204,7 @@ class CMakeTraceParser:
 
         self.targets[args[0]] = CMakeTarget(args[0], 'EXECUTABLE', {})
 
-    def _cmake_add_library(self, tline: CMakeTraceLine):
+    def _cmake_add_library(self, tline                ):
         # DOC: https://cmake.org/cmake/help/latest/command/add_library.html
         args = list(tline.args) # Make a working copy
 
@@ -238,7 +238,7 @@ class CMakeTraceParser:
         else:
             self.targets[args[0]] = CMakeTarget(args[0], 'NORMAL', {}, tline=tline)
 
-    def _cmake_add_custom_command(self, tline: CMakeTraceLine, name=None):
+    def _cmake_add_custom_command(self, tline                , name=None):
         # DOC: https://cmake.org/cmake/help/latest/command/add_custom_command.html
         args = list(tline.args) # Make a working copy
 
@@ -255,18 +255,18 @@ class CMakeTraceParser:
 
         target = CMakeGeneratorTarget(name)
 
-        def handle_output(key: str, target: CMakeGeneratorTarget) -> None:
+        def handle_output(key     , target                      )        :
             target.outputs += [key]
 
-        def handle_command(key: str, target: CMakeGeneratorTarget) -> None:
+        def handle_command(key     , target                      )        :
             if key == 'ARGS':
                 return
             target.command[-1] += key.split(';')
 
-        def handle_depends(key: str, target: CMakeGeneratorTarget) -> None:
+        def handle_depends(key     , target                      )        :
             target.depends += [key]
 
-        def handle_working_dir(key: str, target: CMakeGeneratorTarget) -> None:
+        def handle_working_dir(key     , target                      )        :
             if target.working_dir is None:
                 target.working_dir = key
             else:
@@ -301,7 +301,7 @@ class CMakeTraceParser:
         if name:
             self.targets[name] = target
 
-    def _cmake_add_custom_target(self, tline: CMakeTraceLine):
+    def _cmake_add_custom_target(self, tline                ):
         # DOC: https://cmake.org/cmake/help/latest/command/add_custom_target.html
         # We only the first parameter (the target name) is interesting
         if len(tline.args) < 1:
@@ -310,7 +310,7 @@ class CMakeTraceParser:
         # It's pretty much the same as a custom command
         self._cmake_add_custom_command(tline, tline.args[0])
 
-    def _cmake_set_property(self, tline: CMakeTraceLine) -> None:
+    def _cmake_set_property(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/set_property.html
         args = list(tline.args)
 
@@ -357,7 +357,7 @@ class CMakeTraceParser:
             else:
                 self.targets[i].properties[identifier] = value
 
-    def _cmake_set_target_properties(self, tline: CMakeTraceLine) -> None:
+    def _cmake_set_target_properties(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/set_target_properties.html
         args = list(tline.args)
 
@@ -404,7 +404,7 @@ class CMakeTraceParser:
 
                 self.targets[i].properties[name] = value
 
-    def _cmake_add_dependencies(self, tline: CMakeTraceLine) -> None:
+    def _cmake_add_dependencies(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/add_dependencies.html
         args = list(tline.args)
 
@@ -417,27 +417,27 @@ class CMakeTraceParser:
 
         target.depends += args[1:]
 
-    def _cmake_target_compile_definitions(self, tline: CMakeTraceLine) -> None:
+    def _cmake_target_compile_definitions(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/target_compile_definitions.html
         self._parse_common_target_options('target_compile_definitions', 'COMPILE_DEFINITIONS', 'INTERFACE_COMPILE_DEFINITIONS', tline)
 
-    def _cmake_target_compile_options(self, tline: CMakeTraceLine) -> None:
+    def _cmake_target_compile_options(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/target_compile_options.html
         self._parse_common_target_options('target_compile_options', 'COMPILE_OPTIONS', 'INTERFACE_COMPILE_OPTIONS', tline)
 
-    def _cmake_target_include_directories(self, tline: CMakeTraceLine) -> None:
+    def _cmake_target_include_directories(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/target_include_directories.html
         self._parse_common_target_options('target_include_directories', 'INCLUDE_DIRECTORIES', 'INTERFACE_INCLUDE_DIRECTORIES', tline, ignore=['SYSTEM', 'BEFORE'], paths=True)
 
-    def _cmake_target_link_options(self, tline: CMakeTraceLine) -> None:
+    def _cmake_target_link_options(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/target_link_options.html
         self._parse_common_target_options('target_link_options', 'LINK_OPTIONS', 'INTERFACE_LINK_OPTIONS', tline)
 
-    def _cmake_target_link_libraries(self, tline: CMakeTraceLine) -> None:
+    def _cmake_target_link_libraries(self, tline                )        :
         # DOC: https://cmake.org/cmake/help/latest/command/target_link_libraries.html
         self._parse_common_target_options('target_link_options', 'LINK_LIBRARIES', 'INTERFACE_LINK_LIBRARIES', tline)
 
-    def _parse_common_target_options(self, func: str, private_prop: str, interface_prop: str, tline: CMakeTraceLine, ignore: T.Optional[T.List[str]] = None, paths: bool = False):
+    def _parse_common_target_options(self, func     , private_prop     , interface_prop     , tline                , ignore                          = None, paths       = False):
         if ignore is None:
             ignore = ['BEFORE']
 
@@ -509,7 +509,7 @@ class CMakeTraceParser:
 
             yield CMakeTraceLine(file, line, func, args)
 
-    def _guess_files(self, broken_list: T.List[str]) -> T.List[str]:
+    def _guess_files(self, broken_list             )               :
         #Try joining file paths that contain spaces
 
         reg_start = re.compile(r'^([A-Za-z]:)?/.*/[^./]+$')

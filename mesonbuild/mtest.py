@@ -53,15 +53,15 @@ GNU_SKIP_RETURNCODE = 77
 # mean that the test failed even before testing what it is supposed to test.
 GNU_ERROR_RETURNCODE = 99
 
-def is_windows() -> bool:
+def is_windows()        :
     platname = platform.system().lower()
     return platname == 'windows' or 'mingw' in platname
 
-def is_cygwin() -> bool:
+def is_cygwin()        :
     platname = platform.system().lower()
     return 'cygwin' in platname
 
-def determine_worker_count() -> int:
+def determine_worker_count()       :
     varname = 'MESON_TESTTHREADS'
     if varname in os.environ:
         try:
@@ -78,7 +78,7 @@ def determine_worker_count() -> int:
             num_workers = 1
     return num_workers
 
-def add_arguments(parser: argparse.ArgumentParser) -> None:
+def add_arguments(parser                         )        :
     parser.add_argument('--repeat', default=1, dest='repeat', type=int,
                         help='Number of times to run the tests.')
     parser.add_argument('--no-rebuild', default=False, action='store_true',
@@ -123,7 +123,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
                         help='Optional list of tests to run')
 
 
-def returncode_to_status(retcode: int) -> str:
+def returncode_to_status(retcode     )       :
     # Note: We can't use `os.WIFSIGNALED(result.returncode)` and the related
     # functions here because the status returned by subprocess is munged. It
     # returns a negative value if the process was killed by a signal rather than
@@ -148,7 +148,7 @@ def returncode_to_status(retcode: int) -> str:
         signame = 'SIGinvalid'
     return '(exit status %d or signal %d %s)' % (retcode, signum, signame)
 
-def env_tuple_to_str(env: T.Iterable[T.Tuple[str, str]]) -> str:
+def env_tuple_to_str(env                               )       :
     return ''.join(["%s='%s' " % (k, v) for k, v in env])
 
 
@@ -187,11 +187,11 @@ class TAPParser:
     _RE_YAML_START = re.compile(r'(\s+)---.*')
     _RE_YAML_END = re.compile(r'\s+\.\.\.\s*')
 
-    def __init__(self, io: T.Iterator[str]):
+    def __init__(self, io                 ):
         self.io = io
 
-    def parse_test(self, ok: bool, num: int, name: str, directive: T.Optional[str], explanation: T.Optional[str]) -> \
-            T.Generator[T.Union['TAPParser.Test', 'TAPParser.Error'], None, None]:
+    def parse_test(self, ok      , num     , name     , directive                 , explanation                 )   \
+                                                                                 :
         name = name.strip()
         explanation = explanation.strip() if explanation else None
         if directive is not None:
@@ -208,7 +208,7 @@ class TAPParser:
 
         yield self.Test(num, name, TestResult.OK if ok else TestResult.FAIL, explanation)
 
-    def parse(self) -> T.Generator[T.Union['TAPParser.Test', 'TAPParser.Error', 'TAPParser.Version', 'TAPParser.Plan', 'TAPParser.Bailout'], None, None]:
+    def parse(self)                                                                                                                                     :
         found_late_test = False
         bailed_out = False
         plan = None
@@ -319,10 +319,10 @@ class TAPParser:
 class TestRun:
 
     @classmethod
-    def make_exitcode(cls, test: 'TestSerialisation', test_env: T.Dict[str, str],
-                      returncode: int, starttime: float, duration: float,
-                      stdo: T.Optional[str], stde: T.Optional[str],
-                      cmd: T.Optional[T.List[str]]) -> 'TestRun':
+    def make_exitcode(cls, test                     , test_env                  ,
+                      returncode     , starttime       , duration       ,
+                      stdo                 , stde                 ,
+                      cmd                         )             :
         if returncode == GNU_SKIP_RETURNCODE:
             res = TestResult.SKIP
         elif returncode == GNU_ERROR_RETURNCODE:
@@ -334,10 +334,10 @@ class TestRun:
         return cls(test, test_env, res, returncode, starttime, duration, stdo, stde, cmd)
 
     @classmethod
-    def make_tap(cls, test: 'TestSerialisation', test_env: T.Dict[str, str],
-                 returncode: int, starttime: float, duration: float,
-                 stdo: str, stde: str,
-                 cmd: T.Optional[T.List[str]]) -> 'TestRun':
+    def make_tap(cls, test                     , test_env                  ,
+                 returncode     , starttime       , duration       ,
+                 stdo     , stde     ,
+                 cmd                         )             :
         res = None
         num_tests = 0
         failed = False
@@ -372,10 +372,10 @@ class TestRun:
 
         return cls(test, test_env, res, returncode, starttime, duration, stdo, stde, cmd)
 
-    def __init__(self, test: 'TestSerialisation', test_env: T.Dict[str, str],
-                 res: TestResult, returncode: int, starttime: float, duration: float,
-                 stdo: T.Optional[str], stde: T.Optional[str],
-                 cmd: T.Optional[T.List[str]]):
+    def __init__(self, test                     , test_env                  ,
+                 res            , returncode     , starttime       , duration       ,
+                 stdo                 , stde                 ,
+                 cmd                         ):
         assert isinstance(res, TestResult)
         self.res = res
         self.returncode = returncode
@@ -387,7 +387,7 @@ class TestRun:
         self.env = test_env
         self.should_fail = test.should_fail
 
-    def get_log(self) -> str:
+    def get_log(self)       :
         res = '--- command ---\n'
         if self.cmd is None:
             res += 'NONE\n'
@@ -410,7 +410,7 @@ class TestRun:
         res += '-------\n\n'
         return res
 
-def decode(stream: T.Union[None, bytes]) -> str:
+def decode(stream                      )       :
     if stream is None:
         return ''
     try:
@@ -418,7 +418,7 @@ def decode(stream: T.Union[None, bytes]) -> str:
     except UnicodeDecodeError:
         return stream.decode('iso-8859-1', errors='ignore')
 
-def write_json_log(jsonlogfile: T.TextIO, test_name: str, result: TestRun) -> None:
+def write_json_log(jsonlogfile          , test_name     , result         )        :
     jresult = {'name': test_name,
                'stdout': result.stdo,
                'result': result.res.value,
@@ -431,12 +431,12 @@ def write_json_log(jsonlogfile: T.TextIO, test_name: str, result: TestRun) -> No
         jresult['stderr'] = result.stde
     jsonlogfile.write(json.dumps(jresult) + '\n')
 
-def run_with_mono(fname: str) -> bool:
+def run_with_mono(fname     )        :
     if fname.endswith('.exe') and not (is_windows() or is_cygwin()):
         return True
     return False
 
-def load_benchmarks(build_dir: str) -> T.List['TestSerialisation']:
+def load_benchmarks(build_dir     )                               :
     datafile = Path(build_dir) / 'meson-private' / 'meson_benchmark_setup.dat'
     if not datafile.is_file():
         raise TestException('Directory {!r} does not seem to be a Meson build directory.'.format(build_dir))
@@ -444,7 +444,7 @@ def load_benchmarks(build_dir: str) -> T.List['TestSerialisation']:
         obj = T.cast(T.List['TestSerialisation'], pickle.load(f))
     return obj
 
-def load_tests(build_dir: str) -> T.List['TestSerialisation']:
+def load_tests(build_dir     )                               :
     datafile = Path(build_dir) / 'meson-private' / 'meson_test_setup.dat'
     if not datafile.is_file():
         raise TestException('Directory {!r} does not seem to be a Meson build directory.'.format(build_dir))
@@ -455,14 +455,14 @@ def load_tests(build_dir: str) -> T.List['TestSerialisation']:
 
 class SingleTestRunner:
 
-    def __init__(self, test: 'TestSerialisation', test_env: T.Dict[str, str],
-                 env: T.Dict[str, str], options: argparse.Namespace):
+    def __init__(self, test                     , test_env                  ,
+                 env                  , options                    ):
         self.test = test
         self.test_env = test_env
         self.env = env
         self.options = options
 
-    def _get_cmd(self) -> T.Optional[T.List[str]]:
+    def _get_cmd(self)                           :
         if self.test.fname[0].endswith('.jar'):
             return ['java', '-jar'] + self.test.fname
         elif not self.test.is_cross_built and run_with_mono(self.test.fname[0]):
@@ -475,14 +475,14 @@ class SingleTestRunner:
                     return None
                 else:
                     if not self.test.exe_runner.found():
-                        msg = 'The exe_wrapper defined in the cross file {!r} was not ' \
+                        msg = 'The exe_wrapper defined in the cross file {!r} was not '\
                               'found. Please check the command and/or add it to PATH.'
                         raise TestException(msg.format(self.test.exe_runner.name))
                     return self.test.exe_runner.get_command() + self.test.fname
             else:
                 return self.test.fname
 
-    def run(self) -> TestRun:
+    def run(self)           :
         cmd = self._get_cmd()
         if cmd is None:
             skip_stdout = 'Not run because can not execute cross compiled binaries.'
@@ -493,7 +493,7 @@ class SingleTestRunner:
                 self.test.timeout = None
             return self._run_cmd(wrap + cmd + self.test.cmd_args + self.options.test_args)
 
-    def _run_cmd(self, cmd: T.List[str]) -> TestRun:
+    def _run_cmd(self, cmd             )           :
         starttime = time.time()
 
         if len(self.test.extra_paths) > 0:
@@ -530,7 +530,7 @@ class SingleTestRunner:
             # Make the meson executable ignore SIGINT while gdb is running.
             signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-        def preexec_fn() -> None:
+        def preexec_fn()        :
             if self.options.gdb:
                 # Restore the SIGINT handler for the child process to
                 # ensure it can handle it.
@@ -627,7 +627,7 @@ class SingleTestRunner:
 
 
 class TestHarness:
-    def __init__(self, options: argparse.Namespace):
+    def __init__(self, options                    ):
         self.options = options
         self.collected_logs = []  # type: T.List[str]
         self.fail_count = 0
@@ -651,16 +651,16 @@ class TestHarness:
                 ss.add(s)
         self.suites = list(ss)
 
-    def __del__(self) -> None:
+    def __del__(self)        :
         self.close_logfiles()
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
+    def __exit__(self, exc_type, exc_value, traceback)        :
         self.close_logfiles()
 
-    def close_logfiles(self) -> None:
+    def close_logfiles(self)        :
         if self.logfile:
             self.logfile.close()
             self.logfile = None
@@ -668,7 +668,7 @@ class TestHarness:
             self.jsonlogfile.close()
             self.jsonlogfile = None
 
-    def merge_suite_options(self, options: argparse.Namespace, test: 'TestSerialisation') -> T.Dict[str, str]:
+    def merge_suite_options(self, options                    , test                     )                    :
         if ':' in options.setup:
             if options.setup not in self.build_data.test_setups:
                 sys.exit("Unknown test setup '%s'." % options.setup)
@@ -692,7 +692,7 @@ class TestHarness:
             options.wrapper = current.exe_wrapper
         return current.env.get_env(os.environ.copy())
 
-    def get_test_runner(self, test: 'TestSerialisation') -> SingleTestRunner:
+    def get_test_runner(self, test                     )                    :
         options = deepcopy(self.options)
         if not options.setup:
             options.setup = self.build_data.test_setup_default_name
@@ -704,7 +704,7 @@ class TestHarness:
         env.update(test_env)
         return SingleTestRunner(test, test_env, env, options)
 
-    def process_test_result(self, result: TestRun) -> None:
+    def process_test_result(self, result         )        :
         if result.res is TestResult.TIMEOUT:
             self.timeout_count += 1
         elif result.res is TestResult.SKIP:
@@ -720,8 +720,8 @@ class TestHarness:
         else:
             sys.exit('Unknown test result encountered: {}'.format(result.res))
 
-    def print_stats(self, numlen: int, tests: T.List['TestSerialisation'],
-                    name: str, result: TestRun, i: int) -> None:
+    def print_stats(self, numlen     , tests                             ,
+                    name     , result         , i     )        :
         startpad = ' ' * (numlen - len('%d' % (i + 1)))
         num = '%s%d/%d' % (startpad, i + 1, len(tests))
         padding1 = ' ' * (38 - len(name))
@@ -730,7 +730,7 @@ class TestHarness:
 
         if result.res is TestResult.FAIL:
             status = returncode_to_status(result.returncode)
-        result_str = '%s %s  %s%s%s%5.2f s %s' % \
+        result_str = '%s %s  %s%s%s%5.2f s %s' %\
             (num, name, padding1, result.res.value, padding2, result.duration,
              status)
         ok_statuses = (TestResult.OK, TestResult.EXPECTEDFAIL)
@@ -756,7 +756,7 @@ class TestHarness:
         if self.jsonlogfile:
             write_json_log(self.jsonlogfile, name, result)
 
-    def print_summary(self) -> None:
+    def print_summary(self)        :
         msg = '''
 Ok:                 %4d
 Expected Fail:      %4d
@@ -770,7 +770,7 @@ Timeout:            %4d
         if self.logfile:
             self.logfile.write(msg)
 
-    def print_collected_logs(self) -> None:
+    def print_collected_logs(self)        :
         if len(self.collected_logs) > 0:
             if len(self.collected_logs) > 10:
                 print('\nThe output from 10 first failed tests:\n')
@@ -789,10 +789,10 @@ Timeout:            %4d
                         line = line.encode('ascii', errors='replace').decode()
                         print(line)
 
-    def total_failure_count(self) -> int:
+    def total_failure_count(self)       :
         return self.fail_count + self.unexpectedpass_count + self.timeout_count
 
-    def doit(self) -> int:
+    def doit(self)       :
         if self.is_run:
             raise RuntimeError('Test harness object can only be used once.')
         self.is_run = True
@@ -803,7 +803,7 @@ Timeout:            %4d
         return self.total_failure_count()
 
     @staticmethod
-    def split_suite_string(suite: str) -> T.Tuple[str, str]:
+    def split_suite_string(suite     )                     :
         if ':' in suite:
             # mypy can't figure out that str.split(n, 1) will return a list of
             # length 2, so we have to help it.
@@ -812,7 +812,7 @@ Timeout:            %4d
             return suite, ""
 
     @staticmethod
-    def test_in_suites(test: 'TestSerialisation', suites: T.List[str]) -> bool:
+    def test_in_suites(test                     , suites             )        :
         for suite in suites:
             (prj_match, st_match) = TestHarness.split_suite_string(suite)
             for prjst in test.suite:
@@ -843,12 +843,12 @@ Timeout:            %4d
                 return True
         return False
 
-    def test_suitable(self, test: 'TestSerialisation') -> bool:
+    def test_suitable(self, test                     )        :
         return ((not self.options.include_suites or
                 TestHarness.test_in_suites(test, self.options.include_suites)) and not
                 TestHarness.test_in_suites(test, self.options.exclude_suites))
 
-    def get_tests(self) -> T.List['TestSerialisation']:
+    def get_tests(self)                               :
         if not self.tests:
             print('No tests defined.')
             return []
@@ -871,7 +871,7 @@ Timeout:            %4d
 
         return tests
 
-    def open_log_files(self) -> None:
+    def open_log_files(self)        :
         if not self.options.logbase or self.options.verbose:
             return
 
@@ -897,7 +897,7 @@ Timeout:            %4d
         self.logfile.write('Inherited environment: {}\n\n'.format(inherit_env))
 
     @staticmethod
-    def get_wrapper(options: argparse.Namespace) -> T.List[str]:
+    def get_wrapper(options                    )               :
         wrap = []  # type: T.List[str]
         if options.gdb:
             wrap = [options.gdb_path, '--quiet', '--nh']
@@ -909,7 +909,7 @@ Timeout:            %4d
             wrap += options.wrapper
         return wrap
 
-    def get_pretty_suite(self, test: 'TestSerialisation') -> str:
+    def get_pretty_suite(self, test                     )       :
         if len(self.suites) > 1 and test.suite:
             rv = TestHarness.split_suite_string(test.suite[0])[0]
             s = "+".join(TestHarness.split_suite_string(s)[1] for s in test.suite)
@@ -919,7 +919,7 @@ Timeout:            %4d
         else:
             return test.name
 
-    def run_tests(self, tests: T.List['TestSerialisation']) -> None:
+    def run_tests(self, tests                             )        :
         executor = None
         futures = []  # type: T.List[T.Tuple[conc.Future[TestRun], int, T.List[TestSerialisation], str, int]]
         numlen = len('%d' % len(tests))
@@ -960,7 +960,7 @@ Timeout:            %4d
         finally:
             os.chdir(startdir)
 
-    def drain_futures(self, futures: T.List[T.Tuple['conc.Future[TestRun]', int, T.List['TestSerialisation'], str, int]]) -> None:
+    def drain_futures(self, futures                                                                                     )        :
         for x in futures:
             (result, numlen, tests, name, i) = x
             if self.options.repeat > 1 and self.fail_count:
@@ -970,7 +970,7 @@ Timeout:            %4d
             self.process_test_result(result.result())
             self.print_stats(numlen, tests, name, result.result(), i)
 
-    def run_special(self) -> int:
+    def run_special(self)       :
         '''Tests run by the user, usually something like "under gdb 1000 times".'''
         if self.is_run:
             raise RuntimeError('Can not use run_special after a full run.')
@@ -981,13 +981,13 @@ Timeout:            %4d
         return self.total_failure_count()
 
 
-def list_tests(th: TestHarness) -> bool:
+def list_tests(th             )        :
     tests = th.get_tests()
     for t in tests:
         print(th.get_pretty_suite(t))
     return not tests
 
-def rebuild_all(wd: str) -> bool:
+def rebuild_all(wd     )        :
     if not (Path(wd) / 'build.ninja').is_file():
         print('Only ninja backend is supported to rebuild tests before running them.')
         return True
@@ -1004,7 +1004,7 @@ def rebuild_all(wd: str) -> bool:
 
     return True
 
-def run(options: argparse.Namespace) -> int:
+def run(options                    )       :
     if options.benchmark:
         options.num_processes = 1
 
@@ -1052,7 +1052,7 @@ def run(options: argparse.Namespace) -> int:
                 print(e)
             return 1
 
-def run_with_args(args: T.List[str]) -> int:
+def run_with_args(args             )       :
     parser = argparse.ArgumentParser(prog='meson test')
     add_arguments(parser)
     options = parser.parse_args(args)

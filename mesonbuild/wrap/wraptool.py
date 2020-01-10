@@ -78,7 +78,7 @@ def search(options):
     for p in jd['projects']:
         print(p)
 
-def get_latest_version(name: str) -> tuple:
+def get_latest_version(name     )         :
     jd = get_result(API_ROOT + 'query/get_latest/' + name)
     branch = jd['branch']
     revision = jd['revision']

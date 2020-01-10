@@ -337,10 +337,10 @@ class Disabler(InterpreterObject):
     def found_method(self, args, kwargs):
         return False
 
-def is_disabler(i) -> bool:
+def is_disabler(i)        :
     return isinstance(i, Disabler)
 
-def is_arg_disabled(arg) -> bool:
+def is_arg_disabled(arg)        :
     if is_disabler(arg):
         return True
     if isinstance(arg, list):
@@ -349,7 +349,7 @@ def is_arg_disabled(arg) -> bool:
                 return True
     return False
 
-def is_disabled(args, kwargs) -> bool:
+def is_disabled(args, kwargs)        :
     for i in args:
         if is_arg_disabled(i):
             return True
@@ -973,8 +973,8 @@ The result of this is undefined and will become a hard error in a future Meson r
             if len(posargs) == 2:
                 fallback = posargs[1]
             elif len(posargs) > 2:
-                m = 'Array method \'get()\' only takes two arguments: the ' \
-                    'index and an optional fallback value if the index is ' \
+                m = 'Array method \'get()\' only takes two arguments: the '\
+                    'index and an optional fallback value if the index is '\
                     'out of range.'
                 raise InvalidArguments(m)
             if not isinstance(index, int):

@@ -25,10 +25,9 @@ import ctypes
 
 from .. import mlog, mesonlib
 from ..mesonlib import PerMachine, Popen_safe, version_compare, MachineChoice
-from ..environment import Environment
 
 if T.TYPE_CHECKING:
-    from ..dependencies.base import ExternalProgram
+    pass
 
 
 class CMakeExecutor:
@@ -38,7 +37,7 @@ class CMakeExecutor:
     class_cmakevers = PerMachine(None, None)
     class_cmake_cache = {}
 
-    def __init__(self, environment: Environment, version: str, for_machine: MachineChoice, silent: bool = False):
+    def __init__(self, environment             , version     , for_machine               , silent       = False):
         self.min_version = version
         self.environment = environment
         self.for_machine = for_machine
@@ -55,7 +54,7 @@ class CMakeExecutor:
             self.cmakebin = None
             return
 
-    def find_cmake_binary(self, environment: Environment, silent: bool = False) -> T.Tuple['ExternalProgram', str]:
+    def find_cmake_binary(self, environment             , silent       = False)                                   :
         from ..dependencies.base import ExternalProgram
 
         # Create an iterator of options
@@ -107,7 +106,7 @@ class CMakeExecutor:
 
         return CMakeExecutor.class_cmakebin[self.for_machine], CMakeExecutor.class_cmakevers[self.for_machine]
 
-    def check_cmake(self, cmakebin: 'ExternalProgram') -> T.Optional[str]:
+    def check_cmake(self, cmakebin                   )                   :
         if not cmakebin.found():
             mlog.log('Did not find CMake {!r}'.format(cmakebin.name))
             return None
@@ -130,12 +129,12 @@ class CMakeExecutor:
         cmvers = re.sub(r'\s*cmake version\s*', '', out.split('\n')[0]).strip()
         return cmvers
 
-    def _cache_key(self, args: T.List[str], build_dir: str, env):
+    def _cache_key(self, args             , build_dir     , env):
         fenv = frozenset(env.items()) if env is not None else None
         targs = tuple(args)
         return (self.cmakebin, targs, build_dir, fenv)
 
-    def _call_real(self, args: T.List[str], build_dir: str, env) -> T.Tuple[int, str, str]:
+    def _call_real(self, args             , build_dir     , env)                          :
         os.makedirs(build_dir, exist_ok=True)
         cmd = self.cmakebin.get_command() + args
         ret = subprocess.run(cmd, env=env, cwd=build_dir, close_fds=False,
@@ -148,7 +147,7 @@ class CMakeExecutor:
         mlog.debug("Called `{}` in {} -> {}".format(call, build_dir, rc))
         return rc, out, err
 
-    def call(self, args: T.List[str], build_dir: str, env=None, disable_cache: bool = False):
+    def call(self, args             , build_dir     , env=None, disable_cache       = False):
         if env is None:
             env = os.environ
 
@@ -162,7 +161,7 @@ class CMakeExecutor:
             cache[key] = self._call_real(args, build_dir, env)
         return cache[key]
 
-    def call_with_fake_build(self, args: T.List[str], build_dir: str, env=None):
+    def call_with_fake_build(self, args             , build_dir     , env=None):
         # First check the cache
         cache = CMakeExecutor.class_cmake_cache
         key = self._cache_key(args, build_dir, env)
@@ -176,7 +175,7 @@ class CMakeExecutor:
         fallback = os.path.realpath(__file__)  # A file used as a fallback wehen everything else fails
         compilers = self.environment.coredata.compilers[MachineChoice.BUILD]
 
-        def make_abs(exe: str, lang: str) -> str:
+        def make_abs(exe     , lang     )       :
             if os.path.isabs(exe):
                 return exe
 
@@ -186,7 +185,7 @@ class CMakeExecutor:
                 p = fallback
             return p
 
-        def choose_compiler(lang: str) -> T.Tuple[str, str]:
+        def choose_compiler(lang     )                     :
             exe_list = []
             if lang in compilers:
                 exe_list = compilers[lang].get_exelist()
@@ -273,17 +272,17 @@ set(CMAKE_SIZEOF_VOID_P "{}")
 
         return self.call(args, build_dir, env)
 
-    def found(self) -> bool:
+    def found(self)        :
         return self.cmakebin is not None
 
-    def version(self) -> str:
+    def version(self)       :
         return self.cmakevers
 
-    def executable_path(self) -> str:
+    def executable_path(self)       :
         return self.cmakebin.get_path()
 
     def get_command(self):
         return self.cmakebin.get_command()
 
-    def machine_choice(self) -> MachineChoice:
+    def machine_choice(self)                 :
         return self.for_machine

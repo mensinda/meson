@@ -29,7 +29,6 @@ from . import mlog, environment
 from functools import wraps
 from .mparser import Token, ArrayNode, ArgumentNode, AssignmentNode, BaseNode, BooleanNode, ElementaryNode, IdNode, FunctionNode, StringNode
 import json, os, re, sys
-import typing as T
 
 class RewriterException(MesonException):
     pass
@@ -101,7 +100,7 @@ class RequiredKeys:
         return wrapped
 
 class MTypeBase:
-    def __init__(self, node: T.Optional[BaseNode] = None):
+    def __init__(self, node                       = None):
         if node is None:
             self.node = self._new_node()  # lgtm [py/init-calls-subclass] (node creation does not depend on base class state)
         else:
@@ -142,7 +141,7 @@ class MTypeBase:
         mlog.warning('Cannot remove a regex in type', mlog.bold(type(self).__name__), '--> skipping')
 
 class MTypeStr(MTypeBase):
-    def __init__(self, node: T.Optional[BaseNode] = None):
+    def __init__(self, node                       = None):
         super().__init__(node)
 
     def _new_node(self):
@@ -155,7 +154,7 @@ class MTypeStr(MTypeBase):
         self.node.value = str(value)
 
 class MTypeBool(MTypeBase):
-    def __init__(self, node: T.Optional[BaseNode] = None):
+    def __init__(self, node                       = None):
         super().__init__(node)
 
     def _new_node(self):
@@ -168,7 +167,7 @@ class MTypeBool(MTypeBase):
         self.node.value = bool(value)
 
 class MTypeID(MTypeBase):
-    def __init__(self, node: T.Optional[BaseNode] = None):
+    def __init__(self, node                       = None):
         super().__init__(node)
 
     def _new_node(self):
@@ -181,7 +180,7 @@ class MTypeID(MTypeBase):
         self.node.value = str(value)
 
 class MTypeList(MTypeBase):
-    def __init__(self, node: T.Optional[BaseNode] = None):
+    def __init__(self, node                       = None):
         super().__init__(node)
 
     def _new_node(self):
@@ -197,11 +196,11 @@ class MTypeList(MTypeBase):
             self.node = self._new_node()
             self.node.args.arguments += [tmp]
 
-    def _check_is_equal(self, node, value) -> bool:
+    def _check_is_equal(self, node, value)        :
         # Overwrite in derived class
         return False
 
-    def _check_regex_matches(self, node, regex: str) -> bool:
+    def _check_regex_matches(self, node, regex     )        :
         # Overwrite in derived class
         return False
 
@@ -252,22 +251,22 @@ class MTypeList(MTypeBase):
     def remove_value(self, value):
         self._remove_helper(value, self._check_is_equal)
 
-    def remove_regex(self, regex: str):
+    def remove_regex(self, regex     ):
         self._remove_helper(regex, self._check_regex_matches)
 
 class MTypeStrList(MTypeList):
-    def __init__(self, node: T.Optional[BaseNode] = None):
+    def __init__(self, node                       = None):
         super().__init__(node)
 
     def _new_element_node(self, value):
         return StringNode(Token('', '', 0, 0, 0, None, str(value)))
 
-    def _check_is_equal(self, node, value) -> bool:
+    def _check_is_equal(self, node, value)        :
         if isinstance(node, StringNode):
             return node.value == value
         return False
 
-    def _check_regex_matches(self, node, regex: str) -> bool:
+    def _check_regex_matches(self, node, regex     )        :
         if isinstance(node, StringNode):
             return re.match(regex, node.value) is not None
         return False
@@ -276,18 +275,18 @@ class MTypeStrList(MTypeList):
         return [StringNode]
 
 class MTypeIDList(MTypeList):
-    def __init__(self, node: T.Optional[BaseNode] = None):
+    def __init__(self, node                       = None):
         super().__init__(node)
 
     def _new_element_node(self, value):
         return IdNode(Token('', '', 0, 0, 0, None, str(value)))
 
-    def _check_is_equal(self, node, value) -> bool:
+    def _check_is_equal(self, node, value)        :
         if isinstance(node, IdNode):
             return node.value == value
         return False
 
-    def _check_regex_matches(self, node, regex: str) -> bool:
+    def _check_regex_matches(self, node, regex     )        :
         if isinstance(node, StringNode):
             return re.match(regex, node.value) is not None
         return False
@@ -349,7 +348,7 @@ rewriter_func_kwargs = {
 }
 
 class Rewriter:
-    def __init__(self, sourcedir: str, generator: str = 'ninja', skip_errors: bool = False):
+    def __init__(self, sourcedir     , generator      = 'ninja', skip_errors       = False):
         self.sourcedir = sourcedir
         self.interpreter = IntrospectionInterpreter(sourcedir, '', generator, visitors = [AstIDGenerator(), AstIndentationGenerator(), AstConditionLevel()])
         self.skip_errors = skip_errors
@@ -369,7 +368,7 @@ class Rewriter:
         mlog.log('  -- Project:', mlog.bold(self.interpreter.project_data['descriptive_name']))
         mlog.log('  -- Version:', mlog.cyan(self.interpreter.project_data['version']))
 
-    def add_info(self, cmd_type: str, cmd_id: str, data: dict):
+    def add_info(self, cmd_type     , cmd_id     , data      ):
         if self.info_dump is None:
             self.info_dump = {}
         if cmd_type not in self.info_dump:
@@ -391,8 +390,8 @@ class Rewriter:
             return None
         raise MesonException('Rewriting the meson.build failed')
 
-    def find_target(self, target: str):
-        def check_list(name: str) -> T.List[BaseNode]:
+    def find_target(self, target     ):
+        def check_list(name     )                    :
             result = []
             for i in self.interpreter.targets:
                 if name == i['name'] or name == i['id']:
@@ -421,8 +420,8 @@ class Rewriter:
 
         return tgt
 
-    def find_dependency(self, dependency: str):
-        def check_list(name: str):
+    def find_dependency(self, dependency     ):
+        def check_list(name     ):
             for i in self.interpreter.dependencies:
                 if name == i['name']:
                     return i
@@ -588,7 +587,7 @@ class Rewriter:
         if num_changed > 0 and node not in self.modefied_nodes:
             self.modefied_nodes += [node]
 
-    def find_assignment_node(self, node: BaseNode) -> AssignmentNode:
+    def find_assignment_node(self, node          )                  :
         if hasattr(node, 'ast_id') and node.ast_id in self.interpreter.reverse_assignment:
             return self.interpreter.reverse_assignment[node.ast_id]
         return None
@@ -602,7 +601,7 @@ class Rewriter:
             return self.handle_error()
 
         # Make source paths relative to the current subdir
-        def rel_source(src: str) -> str:
+        def rel_source(src     )       :
             subdir = os.path.abspath(os.path.join(self.sourcedir, target['subdir']))
             if os.path.isabs(src):
                 return os.path.relpath(src, subdir)
@@ -876,7 +875,7 @@ target_operation_map = {
     'info': 'info',
 }
 
-def list_to_dict(in_list: T.List[str]) -> T.Dict[str, str]:
+def list_to_dict(in_list             )                    :
     result = {}
     it = iter(in_list)
     try:
@@ -889,7 +888,7 @@ def list_to_dict(in_list: T.List[str]) -> T.Dict[str, str]:
         raise TypeError('in_list parameter of list_to_dict must have an even length.')
     return result
 
-def generate_target(options) -> T.List[dict]:
+def generate_target(options)                :
     return [{
         'type': 'target',
         'target': options.target,
@@ -899,7 +898,7 @@ def generate_target(options) -> T.List[dict]:
         'target_type': options.tgt_type,
     }]
 
-def generate_kwargs(options) -> T.List[dict]:
+def generate_kwargs(options)                :
     return [{
         'type': 'kwargs',
         'function': options.function,
@@ -908,14 +907,14 @@ def generate_kwargs(options) -> T.List[dict]:
         'kwargs': list_to_dict(options.kwargs),
     }]
 
-def generate_def_opts(options) -> T.List[dict]:
+def generate_def_opts(options)                :
     return [{
         'type': 'default_options',
         'operation': options.operation,
         'options': list_to_dict(options.options),
     }]
 
-def genreate_cmd(options) -> T.List[dict]:
+def genreate_cmd(options)                :
     if os.path.exists(options.json):
         with open(options.json, 'r') as fp:
             return json.load(fp)

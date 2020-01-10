@@ -15,7 +15,6 @@
 # This class contains the basic functionality needed to run any interpreter
 # or an interpreter-based tool.
 
-from .visitor import AstVisitor
 from .. import interpreterbase, mparser, mesonlib
 from .. import environment
 
@@ -35,7 +34,6 @@ from ..mparser import (
 )
 
 import os, sys
-import typing as T
 
 class DontCareObject(interpreterbase.InterpreterObject):
     pass
@@ -59,7 +57,7 @@ ADD_SOURCE = 0
 REMOVE_SOURCE = 1
 
 class AstInterpreter(interpreterbase.InterpreterBase):
-    def __init__(self, source_root: str, subdir: str, visitors: T.Optional[T.List[AstVisitor]] = None):
+    def __init__(self, source_root     , subdir     , visitors                                 = None):
         super().__init__(source_root, subdir)
         self.visitors = visitors if visitors is not None else []
         self.visited_subdirs = {}
@@ -246,8 +244,8 @@ class AstInterpreter(interpreterbase.InterpreterBase):
             self.reverse_assignment[node.value.ast_id] = node
         self.assign_vals[node.var_name] = [self.evaluate_statement(node.value)] # Evaluate the value just in case
 
-    def resolve_node(self, node: BaseNode, include_unknown_args: bool = False, id_loop_detect: T.Optional[T.List[str]] = None) -> T.Optional[T.Any]:
-        def quick_resolve(n: BaseNode, loop_detect: T.Optional[T.List[str]] = None) -> T.Any:
+    def resolve_node(self, node          , include_unknown_args       = False, id_loop_detect                          = None)                     :
+        def quick_resolve(n          , loop_detect                          = None)         :
             if loop_detect is None:
                 loop_detect = []
             if isinstance(n, IdNode):
@@ -327,7 +325,7 @@ class AstInterpreter(interpreterbase.InterpreterBase):
 
         return result
 
-    def flatten_args(self, args: T.Any, include_unknown_args: bool = False, id_loop_detect: T.Optional[T.List[str]] = None) -> T.List[T.Any]:
+    def flatten_args(self, args       , include_unknown_args       = False, id_loop_detect                          = None)                 :
         # Make sure we are always dealing with lists
         if not isinstance(args, list):
             args = [args]
@@ -346,7 +344,7 @@ class AstInterpreter(interpreterbase.InterpreterBase):
                 flattend_args += [i]
         return flattend_args
 
-    def flatten_kwargs(self, kwargs: object, include_unknown_args: bool = False):
+    def flatten_kwargs(self, kwargs        , include_unknown_args       = False):
         flattend_kwargs = {}
         for key, val in kwargs.items():
             if isinstance(val, BaseNode):

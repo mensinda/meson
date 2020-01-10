@@ -22,14 +22,14 @@ import argparse
 
 
 class Token:
-    def __init__(self, tid: str, value: str):
+    def __init__(self, tid     , value     ):
         self.tid = tid
         self.value = value
         self.lineno = 0
         self.colno = 0
 
 class Statement:
-    def __init__(self, name: str, args: list):
+    def __init__(self, name     , args      ):
         self.name = name.lower()
         self.args = args
 
@@ -47,7 +47,7 @@ class Lexer:
             ('rparen', re.compile(r'\)')),
         ]
 
-    def lex(self, code: str) -> T.Iterator[Token]:
+    def lex(self, code     )                     :
         lineno = 1
         line_start = 0
         loc = 0
@@ -87,7 +87,7 @@ class Lexer:
                 raise ValueError('Lexer got confused line %d column %d' % (lineno, col))
 
 class Parser:
-    def __init__(self, code: str):
+    def __init__(self, code     ):
         self.stream = Lexer().lex(code)
         self.getsym()
 
@@ -97,18 +97,18 @@ class Parser:
         except StopIteration:
             self.current = Token('eof', '')
 
-    def accept(self, s: str) -> bool:
+    def accept(self, s     )        :
         if self.current.tid == s:
             self.getsym()
             return True
         return False
 
-    def expect(self, s: str) -> bool:
+    def expect(self, s     )        :
         if self.accept(s):
             return True
         raise ValueError('Expecting %s got %s.' % (s, self.current.tid), self.current.lineno, self.current.colno)
 
-    def statement(self) -> Statement:
+    def statement(self)             :
         cur = self.current
         if self.accept('comment'):
             return Statement('_', [cur.value])
@@ -118,7 +118,7 @@ class Parser:
         self.expect('rparen')
         return Statement(cur.value, args)
 
-    def arguments(self) -> list:
+    def arguments(self)        :
         args = []
         if self.accept('lparen'):
             args.append(self.arguments())
@@ -127,15 +127,15 @@ class Parser:
         if self.accept('comment'):
             rest = self.arguments()
             args += rest
-        elif self.accept('string') \
-                or self.accept('varexp') \
+        elif self.accept('string')\
+                or self.accept('varexp')\
                 or self.accept('id'):
             args.append(arg)
             rest = self.arguments()
             args += rest
         return args
 
-    def parse(self) -> T.Iterator[Statement]:
+    def parse(self)                         :
         while not self.accept('eof'):
             yield(self.statement())
 
@@ -144,13 +144,13 @@ class Converter:
                      'enable_testing': True,
                      'include': True}
 
-    def __init__(self, cmake_root: str):
+    def __init__(self, cmake_root     ):
         self.cmake_root = Path(cmake_root).expanduser()
         self.indent_unit = '  '
         self.indent_level = 0
         self.options = []  # type: T.List[tuple]
 
-    def convert_args(self, args: T.List[Token], as_array: bool = True) -> str:
+    def convert_args(self, args               , as_array       = True)       :
         res = []
         if as_array:
             start = '['
@@ -173,7 +173,7 @@ class Converter:
             return res[0]
         return ''
 
-    def write_entry(self, outfile: T.TextIO, t: Statement):
+    def write_entry(self, outfile          , t           ):
         if t.name in Converter.ignored_funcs:
             return
         preincrement = 0
@@ -265,7 +265,7 @@ class Converter:
             outfile.write('\n')
         self.indent_level += postincrement
 
-    def convert(self, subdir: Path = None):
+    def convert(self, subdir       = None):
         if not subdir:
             subdir = self.cmake_root
         cfile = Path(subdir).expanduser() / 'CMakeLists.txt'

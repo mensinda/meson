@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typing as T
 import time
 import sys, stat
 import datetime
@@ -97,11 +96,11 @@ class MesonApp:
 
         self.options = options
 
-    def has_build_file(self, dirname: str) -> bool:
+    def has_build_file(self, dirname     )        :
         fname = os.path.join(dirname, environment.build_filename)
         return os.path.exists(fname)
 
-    def validate_core_dirs(self, dir1: str, dir2: str) -> T.Tuple[str, str]:
+    def validate_core_dirs(self, dir1     , dir2     )                     :
         if dir1 is None:
             if dir2 is None:
                 if not os.path.exists('meson.build') and os.path.exists('../meson.build'):
@@ -131,7 +130,7 @@ class MesonApp:
             return ndir2, ndir1
         raise MesonException('Neither directory contains a build file %s.' % environment.build_filename)
 
-    def validate_dirs(self, dir1: str, dir2: str, reconfigure: bool, wipe: bool) -> T.Tuple[str, str]:
+    def validate_dirs(self, dir1     , dir2     , reconfigure      , wipe      )                     :
         (src_dir, build_dir) = self.validate_core_dirs(dir1, dir2)
         priv_dir = os.path.join(build_dir, 'meson-private/coredata.dat')
         if os.path.exists(priv_dir):
@@ -239,7 +238,7 @@ class MesonApp:
                     os.unlink(cdf)
             raise
 
-def run(options) -> int:
+def run(options)       :
     coredata.parse_cmd_line_options(options)
     app = MesonApp(options)
     app.generate()

@@ -17,11 +17,11 @@ import typing as T
 
 from ..mesonlib import EnvironmentException
 
-from .compilers import Compiler, MachineChoice, mono_buildtype_args
+from .compilers import Compiler, mono_buildtype_args
 from .mixins.islinker import BasicLinkerIsCompilerMixin
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
+    pass
 
 cs_optimization_args = {'0': [],
                         'g': [],
@@ -36,8 +36,8 @@ class CsCompiler(BasicLinkerIsCompilerMixin, Compiler):
 
     language = 'cs'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 info: 'MachineInfo', comp_id, runner=None):
+    def __init__(self, exelist, version, for_machine               ,
+                 info               , comp_id, runner=None):
         super().__init__(exelist, version, for_machine, info)
         self.id = comp_id
         self.is_cross = False
@@ -141,15 +141,15 @@ class CsCompiler(BasicLinkerIsCompilerMixin, Compiler):
 
 
 class MonoCompiler(CsCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 info: 'MachineInfo'):
+    def __init__(self, exelist, version, for_machine               ,
+                 info               ):
         super().__init__(exelist, version, for_machine, info, 'mono',
                          runner='mono')
 
 
 class VisualStudioCsCompiler(CsCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 info: 'MachineInfo'):
+    def __init__(self, exelist, version, for_machine               ,
+                 info               ):
         super().__init__(exelist, version, for_machine, info, 'csc')
 
     def get_buildtype_args(self, buildtype):

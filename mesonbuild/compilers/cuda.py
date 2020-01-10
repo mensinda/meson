@@ -18,13 +18,12 @@ from functools import partial
 
 from .. import coredata
 from .. import mlog
-from ..mesonlib import EnvironmentException, MachineChoice, Popen_safe, OptionOverrideProxy, is_windows, LibType
+from ..mesonlib import EnvironmentException, LibType, OptionOverrideProxy, Popen_safe, is_windows
 from .compilers import (Compiler, cuda_buildtype_args, cuda_optimization_args,
                         cuda_debug_args)
 
 if T.TYPE_CHECKING:
     from ..environment import Environment  # noqa: F401
-    from ..envconfig import MachineInfo
 
 
 class CudaCompiler(Compiler):
@@ -34,8 +33,8 @@ class CudaCompiler(Compiler):
 
     _universal_flags = {'compiler': ['-I', '-D', '-U', '-E'], 'linker': ['-l', '-L']}
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, exe_wrapper, host_compiler, info: 'MachineInfo', **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, exe_wrapper, host_compiler, info               , **kwargs):
         super().__init__(exelist, version, for_machine, info, **kwargs)
         self.is_cross = is_cross
         self.exe_wrapper = exe_wrapper
@@ -197,7 +196,7 @@ class CudaCompiler(Compiler):
         return args + self._to_host_flags(self.host_compiler.get_option_compile_args(self._to_host_compiler_options(options)))
 
     @classmethod
-    def _cook_link_args(cls, args: T.List[str]) -> T.List[str]:
+    def _cook_link_args(cls, args             )               :
         # Prepare link args for nvcc
         cooked = []  # type: T.List[str]
         for arg in args:
@@ -263,15 +262,15 @@ class CudaCompiler(Compiler):
     def get_depfile_suffix(self):
         return 'd'
 
-    def get_linker_debug_crt_args(self) -> T.List[str]:
+    def get_linker_debug_crt_args(self)               :
         return self._cook_link_args(self.host_compiler.get_linker_debug_crt_args())
 
     def get_buildtype_linker_args(self, buildtype):
         return self._cook_link_args(self.host_compiler.get_buildtype_linker_args(buildtype))
 
-    def build_rpath_args(self, env: 'Environment', build_dir: str, from_dir: str,
-                         rpath_paths: str, build_rpath: str,
-                         install_rpath: str) -> T.List[str]:
+    def build_rpath_args(self, env               , build_dir     , from_dir     ,
+                         rpath_paths     , build_rpath     ,
+                         install_rpath     )               :
         return self._cook_link_args(self.host_compiler.build_rpath_args(
             env, build_dir, from_dir, rpath_paths, build_rpath, install_rpath))
 
@@ -284,13 +283,13 @@ class CudaCompiler(Compiler):
     def compute_parameters_with_absolute_paths(self, parameter_list, build_dir):
         return []
 
-    def get_output_args(self, target: str) -> T.List[str]:
+    def get_output_args(self, target     )               :
         return ['-o', target]
 
-    def get_std_exe_link_args(self) -> T.List[str]:
+    def get_std_exe_link_args(self)               :
         return self._cook_link_args(self.host_compiler.get_std_exe_link_args())
 
-    def find_library(self, libname, env, extra_dirs, libtype: LibType = LibType.PREFER_SHARED):
+    def find_library(self, libname, env, extra_dirs, libtype          = LibType.PREFER_SHARED):
         return ['-l' + libname] # FIXME
 
     def get_crt_compile_args(self, crt_val, buildtype):

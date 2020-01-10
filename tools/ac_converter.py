@@ -29,7 +29,7 @@ import sys
 
 
 # Add stuff here as it is encountered.
-function_data = \
+function_data =\
     {'HAVE_FEENABLEEXCEPT': ('feenableexcept', 'fenv.h'),
      'HAVE_FECLEAREXCEPT': ('feclearexcept', 'fenv.h'),
      'HAVE_FEDISABLEEXCEPT': ('fedisableexcept', 'fenv.h'),
@@ -400,10 +400,10 @@ with open(sys.argv[1]) as f:
             continue
         elem = arr[1]
         if elem.startswith('SIZEOF_'):
-            typename = elem.split('_', 1)[1] \
-                .replace('_P', '*') \
-                .replace('_', ' ') \
-                .lower() \
+            typename = elem.split('_', 1)[1]\
+                .replace('_P', '*')\
+                .replace('_', ' ')\
+                .lower()\
                 .replace('size t', 'size_t')
             sizes.append((elem, typename))
 

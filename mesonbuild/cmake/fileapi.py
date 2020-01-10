@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from .common import CMakeException, CMakeBuildFile, CMakeConfiguration
-import typing as T
 from .. import mlog
 import os
 import json
@@ -22,7 +21,7 @@ import re
 STRIP_KEYS = ['cmake', 'reply', 'backtrace', 'backtraceGraph', 'version']
 
 class CMakeFileAPI:
-    def __init__(self, build_dir: str):
+    def __init__(self, build_dir     ):
         self.build_dir = build_dir
         self.api_base_dir = os.path.join(self.build_dir, '.cmake', 'api', 'v1')
         self.request_dir = os.path.join(self.api_base_dir, 'query', 'client-meson')
@@ -34,13 +33,13 @@ class CMakeFileAPI:
             'cmakeFiles': self._parse_cmakeFiles,
         }
 
-    def get_cmake_sources(self) -> T.List[CMakeBuildFile]:
+    def get_cmake_sources(self)                          :
         return self.cmake_sources
 
-    def get_cmake_configurations(self) -> T.List[CMakeConfiguration]:
+    def get_cmake_configurations(self)                              :
         return self.cmake_configurations
 
-    def setup_request(self) -> None:
+    def setup_request(self)        :
         os.makedirs(self.request_dir, exist_ok=True)
 
         query = {
@@ -53,7 +52,7 @@ class CMakeFileAPI:
         with open(os.path.join(self.request_dir, 'query.json'), 'w') as fp:
             json.dump(query, fp, indent=2)
 
-    def load_reply(self) -> None:
+    def load_reply(self)        :
         if not os.path.isdir(self.reply_dir):
             raise CMakeException('No response from the CMake file API')
 
@@ -87,7 +86,7 @@ class CMakeFileAPI:
 
             self.kind_resolver_map[i['kind']](i)
 
-    def _parse_codemodel(self, data: dict) -> None:
+    def _parse_codemodel(self, data      )        :
         assert('configurations' in data)
         assert('paths' in data)
 
@@ -100,7 +99,7 @@ class CMakeFileAPI:
         # resolved and the resulting data structure is identical
         # to the CMake serve output.
 
-        def helper_parse_dir(dir_entry: dict) -> T.Tuple[str, str]:
+        def helper_parse_dir(dir_entry      )                     :
             src_dir = dir_entry.get('source', '.')
             bld_dir = dir_entry.get('build', '.')
             src_dir = src_dir if os.path.isabs(src_dir) else os.path.join(source_dir, src_dir)
@@ -110,7 +109,7 @@ class CMakeFileAPI:
 
             return src_dir, bld_dir
 
-        def parse_sources(comp_group: dict, tgt: dict) -> T.Tuple[T.List[str], T.List[str], T.List[int]]:
+        def parse_sources(comp_group      , tgt      )                                                  :
             gen = []
             src = []
             idx = []
@@ -127,7 +126,7 @@ class CMakeFileAPI:
 
             return src, gen, idx
 
-        def parse_target(tgt: dict) -> dict:
+        def parse_target(tgt      )        :
             src_dir, bld_dir = helper_parse_dir(cnf.get('paths', {}))
 
             # Parse install paths (if present)
@@ -230,7 +229,7 @@ class CMakeFileAPI:
                 }]
             return tgt_data
 
-        def parse_project(pro: dict) -> dict:
+        def parse_project(pro      )        :
             # Only look at the first directory specified in directoryIndexes
             # TODO Figure out what the other indexes are there for
             p_src_dir = source_dir
@@ -268,7 +267,7 @@ class CMakeFileAPI:
 
             self.cmake_configurations += [CMakeConfiguration(cnf_data)]
 
-    def _parse_cmakeFiles(self, data: dict) -> None:
+    def _parse_cmakeFiles(self, data      )        :
         assert('inputs' in data)
         assert('paths' in data)
 
@@ -279,7 +278,7 @@ class CMakeFileAPI:
             path = path if os.path.isabs(path) else os.path.join(src_dir, path)
             self.cmake_sources += [CMakeBuildFile(path, i.get('isCMake', False), i.get('isGenerated', False))]
 
-    def _strip_data(self, data: T.Any) -> T.Any:
+    def _strip_data(self, data       )         :
         if isinstance(data, list):
             for idx, i in enumerate(data):
                 data[idx] = self._strip_data(i)
@@ -293,7 +292,7 @@ class CMakeFileAPI:
 
         return data
 
-    def _resolve_references(self, data: T.Any) -> T.Any:
+    def _resolve_references(self, data       )         :
         if isinstance(data, list):
             for idx, i in enumerate(data):
                 data[idx] = self._resolve_references(i)
@@ -309,7 +308,7 @@ class CMakeFileAPI:
 
         return data
 
-    def _reply_file_content(self, filename: str) -> dict:
+    def _reply_file_content(self, filename     )        :
         real_path = os.path.join(self.reply_dir, filename)
         if not os.path.exists(real_path):
             raise CMakeException('File "{}" does not exist'.format(real_path))

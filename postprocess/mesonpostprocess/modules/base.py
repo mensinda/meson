@@ -14,15 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typing as T
 
 class PostProcessBase:
-    def __init__(self, name: str, imports: T.List[T.Tuple[str, str]]) -> None:
+    def __init__(self, name     , imports                           )        :
         self.name = name
         self.imports = imports
 
-    def check(self) -> bool:
-        raise NotImplementedError(f'check() is not implemented for {self.name}')
+    def check(self)        :
+        raise NotImplementedError('check() is not implemented for {}'.format(self.name))
 
-    def apply(self, raw: str) -> str:
-        raise NotImplementedError(f'apply() is not implemented for {self.name}')
+    def apply(self, raw     )       :
+        raise NotImplementedError('apply() is not implemented for {}'.format(self.name))

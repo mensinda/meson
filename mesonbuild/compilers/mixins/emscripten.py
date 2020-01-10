@@ -15,7 +15,6 @@
 """Provides a mixin for shared code between C and C++ Emscripten compilers."""
 
 import os.path
-import typing as T
 
 from ...mesonlib import MesonException
 
@@ -26,10 +25,10 @@ class EmscriptenMixin:
     def get_soname_args(self, *args, **kwargs):
         raise MesonException('Emscripten does not support shared libraries.')
 
-    def get_allow_undefined_link_args(self) -> T.List[str]:
+    def get_allow_undefined_link_args(self)               :
         return ['-s', 'ERROR_ON_UNDEFINED_SYMBOLS=0']
 
-    def get_linker_output_args(self, output: str) -> T.List[str]:
+    def get_linker_output_args(self, output     )               :
         return ['-o', output]
 
     def _get_compile_output(self, dirname, mode):

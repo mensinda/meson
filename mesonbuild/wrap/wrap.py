@@ -31,7 +31,7 @@ from . import WrapMode
 from ..mesonlib import ProgressBar, MesonException
 
 if T.TYPE_CHECKING:
-    import http.client
+    pass
 
 try:
     # Importing is just done to check if SSL exists, so all warnings
@@ -48,7 +48,7 @@ ssl_warning_printed = False
 whitelist_subdomain = 'wrapdb.mesonbuild.com'
 
 
-def quiet_git(cmd: T.List[str], workingdir: str) -> T.Tuple[bool, str]:
+def quiet_git(cmd             , workingdir     )                      :
     git = shutil.which('git')
     if not git:
         return False, 'Git program not found.'
@@ -58,7 +58,7 @@ def quiet_git(cmd: T.List[str], workingdir: str) -> T.Tuple[bool, str]:
         return False, pc.stderr
     return True, pc.stdout
 
-def whitelist_wrapdb(urlstr: str) -> urllib.parse.ParseResult:
+def whitelist_wrapdb(urlstr     )                            :
     """ raises WrapException if not whitelisted subdomain """
     url = urllib.parse.urlparse(urlstr)
     if not url.hostname:
@@ -69,7 +69,7 @@ def whitelist_wrapdb(urlstr: str) -> urllib.parse.ParseResult:
         raise WrapException('WrapDB did not have expected SSL https url, instead got {}'.format(urlstr))
     return url
 
-def open_wrapdburl(urlstring: str) -> 'http.client.HTTPResponse':
+def open_wrapdburl(urlstring     )                              :
     global ssl_warning_printed
 
     url = whitelist_wrapdb(urlstring)
@@ -97,7 +97,7 @@ class WrapNotFoundException(WrapException):
     pass
 
 class PackageDefinition:
-    def __init__(self, fname: str):
+    def __init__(self, fname     ):
         self.filename = fname
         self.basename = os.path.basename(fname)
         self.name = self.basename[:-5]
@@ -115,23 +115,23 @@ class PackageDefinition:
         self.type = self.wrap_section[5:]
         self.values = dict(self.config[self.wrap_section])
 
-    def get(self, key: str) -> str:
+    def get(self, key     )       :
         try:
             return self.values[key]
         except KeyError:
             m = 'Missing key {!r} in {}'
             raise WrapException(m.format(key, self.basename))
 
-    def has_patch(self) -> bool:
+    def has_patch(self)        :
         return 'patch_url' in self.values
 
-def load_wrap(subdir_root: str, packagename: str) -> PackageDefinition:
+def load_wrap(subdir_root     , packagename     )                     :
     fname = os.path.join(subdir_root, packagename + '.wrap')
     if os.path.isfile(fname):
         return PackageDefinition(fname)
     return None
 
-def get_directory(subdir_root: str, packagename: str):
+def get_directory(subdir_root     , packagename     ):
     directory = packagename
     # We always have to load the wrap file, if it exists, because it could
     # override the default directory name.
@@ -143,12 +143,12 @@ def get_directory(subdir_root: str, packagename: str):
     return wrap, directory
 
 class Resolver:
-    def __init__(self, subdir_root: str, wrap_mode=WrapMode.default):
+    def __init__(self, subdir_root     , wrap_mode=WrapMode.default):
         self.wrap_mode = wrap_mode
         self.subdir_root = subdir_root
         self.cachedir = os.path.join(self.subdir_root, 'packagecache')
 
-    def resolve(self, packagename: str, method: str) -> str:
+    def resolve(self, packagename     , method     )       :
         self.packagename = packagename
         self.wrap, self.directory = get_directory(self.subdir_root, self.packagename)
         self.dirname = os.path.join(self.subdir_root, self.directory)
@@ -197,14 +197,14 @@ class Resolver:
 
         return self.directory
 
-    def check_can_download(self) -> None:
+    def check_can_download(self)        :
         # Don't download subproject data based on wrap file if requested.
         # Git submodules are ok (see above)!
         if self.wrap_mode is WrapMode.nodownload:
             m = 'Automatic wrap-based subproject downloading is disabled'
             raise WrapException(m)
 
-    def resolve_git_submodule(self) -> bool:
+    def resolve_git_submodule(self)        :
         git = shutil.which('git')
         if not git:
             raise WrapException('Git program not found.')
@@ -240,7 +240,7 @@ class Resolver:
         m = 'Unknown git submodule output: {!r}'
         raise WrapException(m.format(out))
 
-    def get_file(self) -> None:
+    def get_file(self)        :
         path = self.get_file_internal('source')
         extract_dir = self.subdir_root
         # Some upstreams ship packages that do not have a leading directory.
@@ -252,7 +252,7 @@ class Resolver:
         if self.wrap.has_patch():
             self.apply_patch()
 
-    def get_git(self) -> None:
+    def get_git(self)        :
         git = shutil.which('git')
         if not git:
             raise WrapException('Git program not found.')
@@ -305,13 +305,13 @@ class Resolver:
                                        '--push', 'origin', push_url],
                                       cwd=self.dirname)
 
-    def is_git_full_commit_id(self, revno: str) -> bool:
+    def is_git_full_commit_id(self, revno     )        :
         result = False
         if len(revno) in (40, 64): # 40 for sha1, 64 for upcoming sha256
             result = all((ch in '0123456789AaBbCcDdEeFf' for ch in revno))
         return result
 
-    def get_hg(self) -> None:
+    def get_hg(self)        :
         revno = self.wrap.get('revision')
         hg = shutil.which('hg')
         if not hg:
@@ -322,7 +322,7 @@ class Resolver:
             subprocess.check_call([hg, 'checkout', revno],
                                   cwd=self.dirname)
 
-    def get_svn(self) -> None:
+    def get_svn(self)        :
         revno = self.wrap.get('revision')
         svn = shutil.which('svn')
         if not svn:
@@ -330,7 +330,7 @@ class Resolver:
         subprocess.check_call([svn, 'checkout', '-r', revno, self.wrap.get('url'),
                                self.directory], cwd=self.subdir_root)
 
-    def get_data(self, urlstring: str) -> T.Tuple[str, str]:
+    def get_data(self, urlstring     )                     :
         blocksize = 10 * 1024
         h = hashlib.sha256()
         tmpfile = tempfile.NamedTemporaryFile(mode='wb', dir=self.cachedir, delete=False)
@@ -375,7 +375,7 @@ class Resolver:
             hashvalue = h.hexdigest()
         return hashvalue, tmpfile.name
 
-    def check_hash(self, what: str, path: str) -> None:
+    def check_hash(self, what     , path     )        :
         expected = self.wrap.get(what + '_hash')
         h = hashlib.sha256()
         with open(path, 'rb') as f:
@@ -384,7 +384,7 @@ class Resolver:
         if dhash != expected:
             raise WrapException('Incorrect hash for {}:\n {} expected\n {} actual.'.format(what, expected, dhash))
 
-    def download(self, what: str, ofname: str) -> None:
+    def download(self, what     , ofname     )        :
         self.check_can_download()
         srcurl = self.wrap.get(what + '_url')
         mlog.log('Downloading', mlog.bold(self.packagename), what, 'from', mlog.bold(srcurl))
@@ -395,7 +395,7 @@ class Resolver:
             raise WrapException('Incorrect hash for {}:\n {} expected\n {} actual.'.format(what, expected, dhash))
         os.rename(tmpfile, ofname)
 
-    def get_file_internal(self, what: str) -> str:
+    def get_file_internal(self, what     )       :
         filename = self.wrap.get(what + '_filename')
         cache_path = os.path.join(self.cachedir, filename)
 
@@ -409,7 +409,7 @@ class Resolver:
         self.download(what, cache_path)
         return cache_path
 
-    def apply_patch(self) -> None:
+    def apply_patch(self)        :
         path = self.get_file_internal('patch')
         try:
             shutil.unpack_archive(path, self.subdir_root)
@@ -418,7 +418,7 @@ class Resolver:
                 shutil.unpack_archive(path, workdir)
                 self.copy_tree(workdir, self.subdir_root)
 
-    def copy_tree(self, root_src_dir: str, root_dst_dir: str) -> None:
+    def copy_tree(self, root_src_dir     , root_dst_dir     )        :
         """
         Copy directory tree. Overwrites also read only files.
         """

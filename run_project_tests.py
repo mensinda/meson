@@ -114,13 +114,13 @@ def setup_commands(optbackend):
     global do_debug, backend, backend_flags
     global compile_commands, clean_commands, test_commands, install_commands, uninstall_commands
     backend, backend_flags = guess_backend(optbackend, shutil.which('msbuild'))
-    compile_commands, clean_commands, test_commands, install_commands, \
+    compile_commands, clean_commands, test_commands, install_commands,\
         uninstall_commands = get_backend_commands(backend, do_debug)
 
-def get_relative_files_list_from_dir(fromdir: Path) -> T.List[Path]:
+def get_relative_files_list_from_dir(fromdir      )                :
     return [file.relative_to(fromdir) for file in fromdir.rglob('*') if file.is_file()]
 
-def platform_fix_name(fname: str, compiler, env) -> str:
+def platform_fix_name(fname     , compiler, env)       :
     # canonicalize compiler
     if (compiler in {'clang-cl', 'intel-cl'} or
        (env.machines.host.is_windows() and compiler == 'pgi')):
@@ -201,7 +201,7 @@ def platform_fix_name(fname: str, compiler, env) -> str:
 
     return fname
 
-def validate_install(srcdir: str, installdir: Path, compiler, env) -> str:
+def validate_install(srcdir     , installdir      , compiler, env)       :
     # List of installed files
     info_file = Path(srcdir) / 'installed_files.txt'
     installdir = Path(installdir)
@@ -279,7 +279,7 @@ def yellow(text):
     return mlog.yellow(text).get_text(mlog.colorize_console)
 
 
-def _run_ci_include(args: T.List[str]) -> str:
+def _run_ci_include(args             )       :
     if not args:
         return 'At least one parameter required'
     try:
@@ -293,7 +293,7 @@ ci_commands = {
     'ci_include': _run_ci_include
 }
 
-def run_ci_commands(raw_log: str) -> T.List[str]:
+def run_ci_commands(raw_log     )               :
     res = []
     for l in raw_log.splitlines():
         if not l.startswith('!meson_ci!/'):
@@ -474,7 +474,7 @@ def _run_test(testdir, test_build_dir, install_dir, extra_args, compiler, backen
     return TestResult(validate_install(testdir, install_dir, compiler, builddata.environment),
                       BuildStep.validate, stdo, stde, mesonlog, cicmds, gen_time, build_time, test_time)
 
-def gather_tests(testdir: Path) -> T.List[Path]:
+def gather_tests(testdir      )                :
     test_names = [t.name for t in testdir.glob('*') if t.is_dir()]
     test_names = [t for t in test_names if not t.startswith('.')] # Filter non-tests files (dot files, etc)
     test_nums = [(int(t.split()[0]), t) for t in test_names]
@@ -581,7 +581,7 @@ def skippable(suite, test):
     # Other framework tests are allowed to be skipped on other platforms
     return True
 
-def skip_csharp(backend) -> bool:
+def skip_csharp(backend)        :
     if backend is not Backend.ninja:
         return True
     if not shutil.which('resgen'):
@@ -606,7 +606,7 @@ def skip_csharp(backend) -> bool:
 # In Azure some setups have a broken rustc that will error out
 # on all compilation attempts.
 
-def has_broken_rustc() -> bool:
+def has_broken_rustc()        :
     dirname = 'brokenrusttest'
     if os.path.exists(dirname):
         mesonlib.windows_proof_rmtree(dirname)
@@ -621,7 +621,7 @@ def has_broken_rustc() -> bool:
     mesonlib.windows_proof_rmtree(dirname)
     return pc.returncode != 0
 
-def should_skip_rust(backend: Backend) -> bool:
+def should_skip_rust(backend         )        :
     if not shutil.which('rustc'):
         return True
     if backend is not Backend.ninja:
@@ -630,7 +630,7 @@ def should_skip_rust(backend: Backend) -> bool:
         return True
     return False
 
-def detect_tests_to_run(only: T.List[str]) -> T.List[T.Tuple[str, T.List[Path], bool]]:
+def detect_tests_to_run(only             )                                            :
     """
     Parameters
     ----------
@@ -689,18 +689,18 @@ def detect_tests_to_run(only: T.List[str]) -> T.List[T.Tuple[str, T.List[Path], 
     gathered_tests = [(name, gather_tests(Path('test cases', subdir)), skip) for name, subdir, skip in all_tests]
     return gathered_tests
 
-def run_tests(all_tests: T.List[T.Tuple[str, T.List[Path], bool]],
-              log_name_base: str, failfast: bool,
-              extra_args: T.List[str]) -> T.Tuple[int, int, int]:
+def run_tests(all_tests                                          ,
+              log_name_base     , failfast      ,
+              extra_args             )                          :
     global logfile
     txtname = log_name_base + '.txt'
     with open(txtname, 'w', encoding='utf-8', errors='ignore') as lf:
         logfile = lf
         return _run_tests(all_tests, log_name_base, failfast, extra_args)
 
-def _run_tests(all_tests: T.List[T.Tuple[str, T.List[Path], bool]],
-               log_name_base: str, failfast: bool,
-               extra_args: T.List[str]) -> T.Tuple[int, int, int]:
+def _run_tests(all_tests                                          ,
+               log_name_base     , failfast      ,
+               extra_args             )                          :
     global stop, executor, futures, system_compiler
     xmlname = log_name_base + '.xml'
     junit_root = ET.Element('testsuites')
@@ -818,7 +818,7 @@ def _run_tests(all_tests: T.List[T.Tuple[str, T.List[Path], bool]],
     ET.ElementTree(element=junit_root).write(xmlname, xml_declaration=True, encoding='UTF-8')
     return passing_tests, failing_tests, skipped_tests
 
-def check_file(file: Path):
+def check_file(file      ):
     lines = file.read_bytes().split(b'\n')
     tabdetector = re.compile(br' *\t')
     for i, line in enumerate(lines):
@@ -922,7 +922,7 @@ def print_tool_versions():
         },
     ]
 
-    def get_version(t: dict) -> str:
+    def get_version(t      )       :
         exe = shutil.which(t['tool'])
         if not exe:
             return 'not found'

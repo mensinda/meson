@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing as T
 import os
 import re
 import pickle
@@ -318,7 +317,7 @@ int dummy;
             self.add_build_comment(NinjaComment('Install rules'))
             self.generate_install()
             self.generate_dist()
-            if 'b_coverage' in self.environment.coredata.base_options and \
+            if 'b_coverage' in self.environment.coredata.base_options and\
                     self.environment.coredata.base_options['b_coverage'].value:
                 self.add_build_comment(NinjaComment('Coverage rules'))
                 self.generate_coverage_rules()
@@ -410,7 +409,7 @@ int dummy;
     def get_target_source_can_unity(self, target, source):
         if isinstance(source, File):
             source = source.fname
-        if self.environment.is_llvm_ir(source) or \
+        if self.environment.is_llvm_ir(source) or\
            self.environment.is_assembly(source):
             return False
         suffix = os.path.splitext(source)[1][1:]
@@ -421,7 +420,7 @@ int dummy;
                 return False
         return True
 
-    def create_target_source_introspection(self, target: build.Target, comp: compilers.Compiler, parameters, sources, generated_sources):
+    def create_target_source_introspection(self, target              , comp                    , parameters, sources, generated_sources):
         '''
         Adds the source file introspection information for a language of a target
 
@@ -516,7 +515,7 @@ int dummy;
         if 'vala' in target.compilers:
             # Sources consumed by valac are filtered out. These only contain
             # C/C++ sources, objects, generated libs, and unknown sources now.
-            target_sources, generated_sources, \
+            target_sources, generated_sources,\
                 vala_generated_sources = self.generate_vala_compile(target)
         else:
             target_sources = self.get_target_sources(target)
@@ -542,8 +541,8 @@ int dummy;
             if langs_cant:
                 langs_are = langs = ', '.join(langs_cant).upper()
                 langs_are += ' are' if len(langs_cant) > 1 else ' is'
-                msg = '{} not supported in Unity builds yet, so {} ' \
-                      'sources in the {!r} target will be compiled normally' \
+                msg = '{} not supported in Unity builds yet, so {} '\
+                      'sources in the {!r} target will be compiled normally'\
                       ''.format(langs_are, langs, target.name)
                 mlog.log(mlog.red('FIXME'), msg)
 
@@ -739,8 +738,8 @@ int dummy;
                 exe_wrap = self.environment.get_exe_wrapper()
                 if exe_wrap:
                     if not exe_wrap.found():
-                        msg = 'The exe_wrapper {!r} defined in the cross file is ' \
-                              'needed by run target {!r}, but was not found. ' \
+                        msg = 'The exe_wrapper {!r} defined in the cross file is '\
+                              'needed by run target {!r}, but was not found. '\
                               'Please check the command and/or add it to PATH.'
                         raise MesonException(msg.format(exe_wrap.name, target.name))
                     cmd += exe_wrap.get_command()
@@ -869,7 +868,7 @@ int dummy;
                                 deps='gcc', depfile='$DEPFILE',
                                 extra='restat = 1'))
 
-        c = [ninja_quote(quote_func(x)) for x in self.environment.get_build_command()] + \
+        c = [ninja_quote(quote_func(x)) for x in self.environment.get_build_command()] +\
             ['--internal',
              'regenerate',
              ninja_quote(quote_func(self.environment.get_source_dir())),
@@ -1112,7 +1111,7 @@ int dummy;
             # either in the source root, or generated with configure_file and
             # in the build root
             if not isinstance(s, File):
-                msg = 'All sources in target {!r} must be of type ' \
+                msg = 'All sources in target {!r} must be of type '\
                       'mesonlib.File, not {!r}'.format(t, s)
                 raise InvalidArguments(msg)
             f = s.rel_to_builddir(self.build_to_src)
@@ -1137,8 +1136,8 @@ int dummy;
                     srctype = othersgen
                 # Duplicate outputs are disastrous
                 if f in srctype and srctype[f] is not gensrc:
-                    msg = 'Duplicate output {0!r} from {1!r} {2!r}; ' \
-                          'conflicts with {0!r} from {4!r} {3!r}' \
+                    msg = 'Duplicate output {0!r} from {1!r} {2!r}; '\
+                          'conflicts with {0!r} from {4!r} {3!r}'\
                           ''.format(f, type(gensrc).__name__, gensrc.name,
                                     srctype[f].name, type(srctype[f]).__name__)
                     raise InvalidArguments(msg)
@@ -1367,23 +1366,23 @@ int dummy;
         self.create_target_source_introspection(target, rustc, args, [main_rust_file], [])
 
     @staticmethod
-    def get_rule_suffix(for_machine: MachineChoice) -> str:
+    def get_rule_suffix(for_machine               )       :
         return PerMachine('_FOR_BUILD', '')[for_machine]
 
     @classmethod
-    def get_compiler_rule_name(cls, lang: str, for_machine: MachineChoice) -> str:
+    def get_compiler_rule_name(cls, lang     , for_machine               )       :
         return '%s_COMPILER%s' % (lang, cls.get_rule_suffix(for_machine))
 
     @classmethod
-    def get_pch_rule_name(cls, lang: str, for_machine: MachineChoice) -> str:
+    def get_pch_rule_name(cls, lang     , for_machine               )       :
         return '%s_PCH%s' % (lang, cls.get_rule_suffix(for_machine))
 
     @classmethod
-    def compiler_to_rule_name(cls, compiler: Compiler) -> str:
+    def compiler_to_rule_name(cls, compiler          )       :
         return cls.get_compiler_rule_name(compiler.get_language(), compiler.for_machine)
 
     @classmethod
-    def compiler_to_pch_rule_name(cls, compiler: Compiler) -> str:
+    def compiler_to_pch_rule_name(cls, compiler          )       :
         return cls.get_pch_rule_name(compiler.get_language(), compiler.for_machine)
 
     def swift_module_file_name(self, target):
@@ -1564,9 +1563,9 @@ int dummy;
         for for_machine in MachineChoice:
             complist = self.environment.coredata.compilers[for_machine]
             for langname, compiler in complist.items():
-                if langname == 'java' \
-                        or langname == 'vala' \
-                        or langname == 'rust' \
+                if langname == 'java'\
+                        or langname == 'vala'\
+                        or langname == 'rust'\
                         or langname == 'cs':
                     continue
                 rule = '%s_LINKER%s' % (langname, self.get_rule_suffix(for_machine))
@@ -1581,7 +1580,7 @@ int dummy;
                                         rspable=compiler.can_linker_accept_rsp(),
                                         extra=pool))
 
-        args = [ninja_quote(quote_func(x)) for x in self.environment.get_build_command()] + \
+        args = [ninja_quote(quote_func(x)) for x in self.environment.get_build_command()] +\
             ['--internal',
              'symbolextractor',
              '$in',
@@ -1872,7 +1871,7 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
 
         self.fortran_deps[target.get_basename()] = {**module_files, **submodule_files}
 
-    def get_fortran_deps(self, compiler: FortranCompiler, src: Path, target) -> T.List[str]:
+    def get_fortran_deps(self, compiler                 , src      , target)               :
         """
         Find all module and submodule needed by a Fortran target
         """
@@ -2274,8 +2273,8 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
             if not pch:
                 continue
             if not has_path_sep(pch[0]) or not has_path_sep(pch[-1]):
-                msg = 'Precompiled header of {!r} must not be in the same ' \
-                      'directory as source, please put it in a subdirectory.' \
+                msg = 'Precompiled header of {!r} must not be in the same '\
+                      'directory as source, please put it in a subdirectory.'\
                       ''.format(target.get_basename())
                 raise InvalidArguments(msg)
             compiler = target.compilers[lang]
@@ -2311,7 +2310,7 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
         self.add_build(elem)
 
     def get_cross_stdlib_link_args(self, target, linker):
-        if isinstance(target, build.StaticLibrary) or \
+        if isinstance(target, build.StaticLibrary) or\
            self.environment.machines.matches_build_machine(target.for_machine):
             return []
         if not self.environment.properties.host.has_stdlib(linker.language):
@@ -2658,8 +2657,8 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
             return
         if ('', 'scan-build') in self.build.run_target_names:
             return
-        cmd = self.environment.get_build_command() + \
-            ['--internal', 'scanbuild', self.environment.source_dir, self.environment.build_dir] + \
+        cmd = self.environment.get_build_command() +\
+            ['--internal', 'scanbuild', self.environment.source_dir, self.environment.build_dir] +\
             self.environment.get_build_command() + self.get_user_option_args()
         elem = NinjaBuildElement(self.all_outputs, 'meson-scan-build', 'CUSTOM_COMMAND', 'PHONY')
         elem.add_item('COMMAND', cmd)
@@ -2670,14 +2669,14 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
 
     def generate_clangtool(self, name):
         target_name = 'clang-' + name
-        if not os.path.exists(os.path.join(self.environment.source_dir, '.clang-' + name)) and \
+        if not os.path.exists(os.path.join(self.environment.source_dir, '.clang-' + name)) and\
                 not os.path.exists(os.path.join(self.environment.source_dir, '_clang-' + name)):
             return
         if target_name in self.all_outputs:
             return
         if ('', target_name) in self.build.run_target_names:
             return
-        cmd = self.environment.get_build_command() + \
+        cmd = self.environment.get_build_command() +\
             ['--internal', 'clang' + name, self.environment.source_dir, self.environment.build_dir]
         elem = NinjaBuildElement(self.all_outputs, 'meson-' + target_name, 'CUSTOM_COMMAND', 'PHONY')
         elem.add_item('COMMAND', cmd)
@@ -2704,7 +2703,7 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
             return
         if target_name in self.all_outputs:
             return
-        cmd = self.environment.get_build_command() + \
+        cmd = self.environment.get_build_command() +\
             ['--internal', 'tags', tool, self.environment.source_dir]
         elem = NinjaBuildElement(self.all_outputs, 'meson-' + target_name, 'CUSTOM_COMMAND', 'PHONY')
         elem.add_item('COMMAND', cmd)
@@ -2760,7 +2759,7 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
         if ctlist:
             elem.add_dep(self.generate_custom_target_clean(ctlist))
 
-        if 'b_coverage' in self.environment.coredata.base_options and \
+        if 'b_coverage' in self.environment.coredata.base_options and\
            self.environment.coredata.base_options['b_coverage'].value:
             self.generate_gcov_clean()
             elem.add_dep('clean-gcda')
@@ -2795,7 +2794,7 @@ def load(build_dir):
     return obj
 
 
-def _scan_fortran_file_deps(src: Path, srcdir: Path, dirname: Path, tdeps, compiler) -> T.List[str]:
+def _scan_fortran_file_deps(src      , srcdir      , dirname      , tdeps, compiler)               :
     """
     scan a Fortran file for dependencies. Needs to be distinct from target
     to allow for recursion induced by `include` statements.er

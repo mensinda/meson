@@ -8,7 +8,7 @@ assert(os.path.exists(sys.argv[3]))
 args = sys.argv[:-1]
 
 if __name__ == '__main__':
-    if len(args) != 3 or not args[1].startswith('--input') or \
+    if len(args) != 3 or not args[1].startswith('--input') or\
        not args[2].startswith('--output'):
         print(args[0], '--input=input_file --output=output_file')
         sys.exit(1)

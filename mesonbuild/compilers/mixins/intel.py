@@ -81,23 +81,23 @@ class IntelGnuLikeCompiler(GnuLikeCompiler):
         self.id = 'intel'
         self.lang_header = 'none'
 
-    def get_pch_suffix(self) -> str:
+    def get_pch_suffix(self)       :
         return 'pchi'
 
-    def get_pch_use_args(self, pch_dir: str, header: str) -> T.List[str]:
+    def get_pch_use_args(self, pch_dir     , header     )               :
         return ['-pch', '-pch_dir', os.path.join(pch_dir), '-x',
                 self.lang_header, '-include', header, '-x', 'none']
 
-    def get_pch_name(self, header_name: str) -> str:
+    def get_pch_name(self, header_name     )       :
         return os.path.basename(header_name) + '.' + self.get_pch_suffix()
 
-    def openmp_flags(self) -> T.List[str]:
+    def openmp_flags(self)               :
         if mesonlib.version_compare(self.version, '>=15.0.0'):
             return ['-qopenmp']
         else:
             return ['-openmp']
 
-    def compiles(self, *args, **kwargs) -> T.Tuple[bool, bool]:
+    def compiles(self, *args, **kwargs)                       :
         # This covers a case that .get('foo', []) doesn't, that extra_args is
         # defined and is None
         extra_args = kwargs.get('extra_args') or []
@@ -113,16 +113,16 @@ class IntelGnuLikeCompiler(GnuLikeCompiler):
         ]
         return super().compiles(*args, **kwargs)
 
-    def get_profile_generate_args(self) -> T.List[str]:
+    def get_profile_generate_args(self)               :
         return ['-prof-gen=threadsafe']
 
-    def get_profile_use_args(self) -> T.List[str]:
+    def get_profile_use_args(self)               :
         return ['-prof-use']
 
-    def get_buildtype_args(self, buildtype: str) -> T.List[str]:
+    def get_buildtype_args(self, buildtype     )               :
         return self.BUILD_ARGS[buildtype]
 
-    def get_optimization_args(self, optimization_level: str) -> T.List[str]:
+    def get_optimization_args(self, optimization_level     )               :
         return self.OPTIM_ARGS[optimization_level]
 
 
@@ -148,11 +148,11 @@ class IntelVisualStudioLikeCompiler(VisualStudioLikeCompiler):
         's': ['/Os'],
     }
 
-    def __init__(self, target: str):
+    def __init__(self, target     ):
         super().__init__(target)
         self.id = 'intel-cl'
 
-    def compile(self, code, *, extra_args: T.Optional[T.List[str]] = None, **kwargs) -> T.Iterator['subprocess.Popen']:
+    def compile(self, code, *, extra_args                          = None, **kwargs)                                  :
         # This covers a case that .get('foo', []) doesn't, that extra_args is
         if kwargs.get('mode', 'compile') != 'link':
             extra_args = extra_args.copy() if extra_args is not None else []
@@ -166,7 +166,7 @@ class IntelVisualStudioLikeCompiler(VisualStudioLikeCompiler):
             ])
         return super().compile(code, extra_args, **kwargs)
 
-    def get_toolset_version(self) -> T.Optional[str]:
+    def get_toolset_version(self)                   :
         # Avoid circular dependencies....
         from ...environment import search_version
 
@@ -178,11 +178,11 @@ class IntelVisualStudioLikeCompiler(VisualStudioLikeCompiler):
         version = int(v1 + v2)
         return self._calculate_toolset_version(version)
 
-    def openmp_flags(self) -> T.List[str]:
+    def openmp_flags(self)               :
         return ['/Qopenmp']
 
-    def get_buildtype_args(self, buildtype: str) -> T.List[str]:
+    def get_buildtype_args(self, buildtype     )               :
         return self.BUILD_ARGS[buildtype]
 
-    def get_optimization_args(self, optimization_level: str) -> T.List[str]:
+    def get_optimization_args(self, optimization_level     )               :
         return self.OPTIM_ARGS[optimization_level]

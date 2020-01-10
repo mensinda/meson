@@ -41,7 +41,6 @@ import subprocess
 import collections
 from itertools import chain
 import functools
-import typing as T
 
 import importlib
 
@@ -332,8 +331,8 @@ class ConfigurationDataHolder(MutableInterpreterObject, ObjectHolder):
             raise InterpreterException("Can not set values on configuration object that has been used.")
         name, val = args
         if not isinstance(val, (int, str)):
-            msg = 'Setting a configuration data value to {!r} is invalid, ' \
-                  'and will fail at configure_file(). If you are using it ' \
+            msg = 'Setting a configuration data value to {!r} is invalid, '\
+                  'and will fail at configure_file(). If you are using it '\
                   'just to store some values, please use a dict instead.'
             mlog.deprecation(msg.format(val), location=self.current_node)
         desc = kwargs.get('description', None)
@@ -914,11 +913,11 @@ class RunTargetHolder(TargetHolder):
         return r.format(self.__class__.__name__, h.get_id(), h.command)
 
 class Test(InterpreterObject):
-    def __init__(self, name: str, project: str, suite: T.List[str], exe: build.Executable,
-                 depends: T.List[T.Union[build.CustomTarget, build.BuildTarget]],
-                 is_parallel: bool, cmd_args: T.List[str], env: build.EnvironmentVariables,
-                 should_fail: bool, timeout: int, workdir: T.Optional[str], protocol: str,
-                 priority: int):
+    def __init__(self, name     , project     , suite             , exe                  ,
+                 depends                                                        ,
+                 is_parallel      , cmd_args             , env                            ,
+                 should_fail      , timeout     , workdir                 , protocol     ,
+                 priority     ):
         InterpreterObject.__init__(self)
         self.name = name
         self.suite = suite
@@ -1908,7 +1907,7 @@ class MesonMain(InterpreterObject):
     @noPosargs
     @permittedKwargs({})
     def has_exe_wrapper_method(self, args, kwargs):
-        if self.is_cross_build_method(None, None) and \
+        if self.is_cross_build_method(None, None) and\
            self.build.environment.need_exe_wrapper():
             if self.build.environment.exe_wrapper is None:
                 return False
@@ -2174,11 +2173,11 @@ class Interpreter(InterpreterBase):
         assert self.build.environment.machines.host.cpu is not None
         assert self.build.environment.machines.target.cpu is not None
 
-        self.builtin['build_machine'] = \
+        self.builtin['build_machine'] =\
             MachineHolder(self.build.environment.machines.build)
-        self.builtin['host_machine'] = \
+        self.builtin['host_machine'] =\
             MachineHolder(self.build.environment.machines.host)
-        self.builtin['target_machine'] = \
+        self.builtin['target_machine'] =\
             MachineHolder(self.build.environment.machines.target)
 
     def get_non_matching_default_options(self):
@@ -2544,7 +2543,7 @@ external dependencies (including libraries) must go to "dependencies".''')
         self.subprojects[dirname] = sub
         return sub
 
-    def do_subproject(self, dirname: str, method: str, kwargs):
+    def do_subproject(self, dirname     , method     , kwargs):
         disabled, required, feature = extract_required_kwarg(kwargs, self.subproject)
         if disabled:
             mlog.log('Subproject', mlog.bold(dirname), ':', 'skipped: feature', mlog.bold(feature), 'disabled')
@@ -2944,14 +2943,14 @@ external dependencies (including libraries) must go to "dependencies".''')
         self.validate_arguments(args, 0, [])
         raise Exception()
 
-    def add_languages(self, args: T.Sequence[str], required: bool) -> bool:
+    def add_languages(self, args                 , required      )        :
         success = self.add_languages_for(args, required, MachineChoice.BUILD)
         success &= self.add_languages_for(args, required, MachineChoice.HOST)
         if not self.coredata.is_cross_build():
             self.coredata.copy_build_options_from_regular_ones()
         return success
 
-    def add_languages_for(self, args, required, for_machine: MachineChoice):
+    def add_languages_for(self, args, required, for_machine               ):
         success = True
         for lang in sorted(args, key=compilers.sort_clink):
             lang = lang.lower()
@@ -3063,7 +3062,7 @@ external dependencies (including libraries) must go to "dependencies".''')
 
     # TODO update modules to always pass `for_machine`. It is bad-form to assume
     # the host machine.
-    def find_program_impl(self, args, for_machine: MachineChoice = MachineChoice.HOST,
+    def find_program_impl(self, args, for_machine                = MachineChoice.HOST,
                           required=True, silent=True, wanted='', search_dirs=None):
         if not isinstance(args, list):
             args = [args]
@@ -3429,7 +3428,7 @@ external dependencies (including libraries) must go to "dependencies".''')
             else:
                 vcs_cmd = [' '] # executing this cmd will fail in vcstagger.py and force to use the fallback string
         # vcstagger.py parameters: infile, outfile, fallback, source_dir, replace_string, regex_selector, command...
-        kwargs['command'] = self.environment.get_build_command() + \
+        kwargs['command'] = self.environment.get_build_command() +\
             ['--internal',
              'vcstagger',
              '@INPUT0@',
@@ -3550,7 +3549,7 @@ This will become a hard error in the future.''' % kwargs['input'], location=self
     def func_test(self, node, args, kwargs):
         self.add_test(node, args, kwargs, True)
 
-    def unpack_env_kwarg(self, kwargs) -> build.EnvironmentVariables:
+    def unpack_env_kwarg(self, kwargs)                              :
         envlist = kwargs.get('env', EnvironmentVariablesHolder())
         if isinstance(envlist, EnvironmentVariablesHolder):
             env = envlist.held_object
@@ -3702,7 +3701,7 @@ This will become a hard error in the future.''' % kwargs['input'], location=self
         if len(install_mode) > 3:
             raise InvalidArguments('Keyword argument install_mode takes at '
                                    'most 3 arguments.')
-        if len(install_mode) > 0 and install_mode[0] is not None and \
+        if len(install_mode) > 0 and install_mode[0] is not None and\
            not isinstance(install_mode[0], str):
             raise InvalidArguments('Keyword argument install_mode requires the '
                                    'permissions arg to be a string or false')
@@ -3881,7 +3880,7 @@ This will become a hard error in the future.''' % kwargs['input'], location=self
             if inputs:
                 os.makedirs(os.path.join(self.environment.build_dir, self.subdir), exist_ok=True)
                 file_encoding = kwargs.setdefault('encoding', 'utf-8')
-                missing_variables, confdata_useless = \
+                missing_variables, confdata_useless =\
                     mesonlib.do_conf_file(inputs_abs[0], ofile_abs, conf.held_object,
                                           fmt, file_encoding)
                 if missing_variables:
@@ -4110,11 +4109,11 @@ different subdirectory.
 
     def add_global_arguments(self, node, argsdict, args, kwargs):
         if self.is_subproject():
-            msg = 'Function \'{}\' cannot be used in subprojects because ' \
-                  'there is no way to make that reliable.\nPlease only call ' \
-                  'this if is_subproject() returns false. Alternatively, ' \
-                  'define a variable that\ncontains your language-specific ' \
-                  'arguments and add it to the appropriate *_args kwarg ' \
+            msg = 'Function \'{}\' cannot be used in subprojects because '\
+                  'there is no way to make that reliable.\nPlease only call '\
+                  'this if is_subproject() returns false. Alternatively, '\
+                  'define a variable that\ncontains your language-specific '\
+                  'arguments and add it to the appropriate *_args kwarg '\
                   'in each target.'.format(node.func_name)
             raise InvalidCode(msg)
         frozen = self.project_args_frozen or self.global_args_frozen
@@ -4128,8 +4127,8 @@ different subdirectory.
 
     def add_arguments(self, node, argsdict, args_frozen, args, kwargs):
         if args_frozen:
-            msg = 'Tried to use \'{}\' after a build target has been declared.\n' \
-                  'This is not permitted. Please declare all ' \
+            msg = 'Tried to use \'{}\' after a build target has been declared.\n'\
+                  'This is not permitted. Please declare all '\
                   'arguments before your targets.'.format(node.func_name)
             raise InvalidCode(msg)
 
@@ -4397,7 +4396,7 @@ This will become a hard error in the future.''', location=self.current_node)
             return
         for l in self.get_used_languages(target):
             props = self.environment.properties.host
-            if props.has_stdlib(l) \
+            if props.has_stdlib(l)\
                     and self.subproject != props.get_stdlib(l)[0]:
                 target.add_deps(self.build.stdlibs.host[l])
 
@@ -4469,7 +4468,7 @@ This will become a hard error in the future.''', location=self.current_node)
         return varname in self.variables
 
     @staticmethod
-    def machine_from_native_kwarg(kwargs: T.Dict[str, T.Any]) -> MachineChoice:
+    def machine_from_native_kwarg(kwargs                    )                 :
         native = kwargs.get('native', False)
         if not isinstance(native, bool):
             raise InvalidArguments('Argument to "native" must be a boolean.')

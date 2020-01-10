@@ -117,10 +117,10 @@ class GnuStepDependency(ConfigToolDependency):
         """
         result = []
         for f in args:
-            if f.startswith('-D') \
-                    or f.startswith('-f') \
-                    or f.startswith('-I') \
-                    or f == '-pthread' \
+            if f.startswith('-D')\
+                    or f.startswith('-f')\
+                    or f.startswith('-I')\
+                    or f == '-pthread'\
                     or (f.startswith('-W') and not f == '-Wall'):
                 result.append(f)
         return result

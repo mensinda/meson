@@ -20,13 +20,13 @@ class ConvertFStrings(PostProcessBase):
     def __init__(self):
         super().__init__('f-strings', [('f2format', 'https://pypi.org/project/f2format')])
 
-    def check(self) -> bool:
+    def check(self)        :
         try:
             import f2format  # type: ignore # noqa
         except ImportError:
             return False
         return True
 
-    def apply(self, raw: str) -> str:
+    def apply(self, raw     )       :
         import f2format
         return f2format.convert(raw)

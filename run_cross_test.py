@@ -33,7 +33,7 @@ from run_project_tests import failing_logs
 def runtests(cross_file, failfast):
     commontests = [('common', gather_tests(Path('test cases', 'common')), False)]
     try:
-        (passing_tests, failing_tests, skipped_tests) = \
+        (passing_tests, failing_tests, skipped_tests) =\
             run_tests(commontests, 'meson-cross-test-run', failfast, ['--cross-file', cross_file])
     except StopException:
         pass

@@ -21,14 +21,14 @@ class CodeFormater(PostProcessBase):
     def __init__(self):
         super().__init__('format', [('autopep8', 'https://pypi.org/project/autopep8')])
 
-    def check(self) -> bool:
+    def check(self)        :
         try:
             import autopep8  # type: ignore # noqa
         except ImportError:
             return False
         return True
 
-    def apply(self, raw: str) -> str:
+    def apply(self, raw     )       :
         import autopep8
         # Supress <string>:1: SyntaxWarning: "is" with a literal. Did you mean "=="?
         with warnings.catch_warnings():

@@ -20,13 +20,13 @@ class FixUnusedImports(PostProcessBase):
     def __init__(self):
         super().__init__('fix-imports', [('autoflake', 'https://pypi.org/project/autoflake')])
 
-    def check(self) -> bool:
+    def check(self)        :
         try:
             import autoflake  # type: ignore # noqa
         except ImportError:
             return False
         return True
 
-    def apply(self, raw: str) -> str:
+    def apply(self, raw     )       :
         import autoflake
         return autoflake.fix_code(raw, remove_duplicate_keys=True, remove_all_unused_imports=True)

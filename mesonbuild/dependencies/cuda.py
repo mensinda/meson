@@ -95,7 +95,7 @@ class CudaDependency(ExternalDependency):
         if defaults:
             return (defaults[0][0], defaults[0][1], True)
 
-        platform_msg = 'set the CUDA_PATH environment variable' if self._is_windows() \
+        platform_msg = 'set the CUDA_PATH environment variable' if self._is_windows()\
             else 'set the CUDA_PATH environment variable/create the \'/usr/local/cuda\' symbolic link'
         msg = 'Please specify the desired CUDA Toolkit version (e.g. dependency(\'cuda\', version : \'>=10.1\')) or {} to point to the location of your desired version.'.format(platform_msg)
         return self._report_dependency_error(msg, (None, None, False))
@@ -134,7 +134,7 @@ class CudaDependency(ExternalDependency):
         return env_vars[0] if env_vars else None
 
     def _cuda_paths(self):
-        return ([(os.environ[self.env_var], True)] if self.env_var else []) \
+        return ([(os.environ[self.env_var], True)] if self.env_var else [])\
             + (self._cuda_paths_win() if self._is_windows() else self._cuda_paths_nix())
 
     def _cuda_paths_win(self):

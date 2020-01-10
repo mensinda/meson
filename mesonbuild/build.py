@@ -96,7 +96,7 @@ known_stlib_kwargs = known_build_target_kwargs | {'pic'}
 known_jar_kwargs = known_exe_kwargs | {'main_class'}
 
 @lru_cache(maxsize=None)
-def get_target_macos_dylib_install_name(ld) -> str:
+def get_target_macos_dylib_install_name(ld)       :
     name = ['@rpath/', ld.prefix, ld.name]
     if ld.soversion is not None:
         name.append('.' + ld.soversion)
@@ -111,7 +111,7 @@ class Build:
     all dependencies and so on.
     """
 
-    def __init__(self, environment: environment.Environment):
+    def __init__(self, environment                         ):
         self.project_name = 'name of master project'
         self.project_version = None
         self.environment = environment
@@ -331,14 +331,14 @@ class EnvironmentVariables:
 
         return value
 
-    def get_env(self, full_env: T.Dict[str, str]) -> T.Dict[str, str]:
+    def get_env(self, full_env                  )                    :
         env = full_env.copy()
         for method, name, values, kwargs in self.envvars:
             env[name] = method(full_env, name, values, kwargs)
         return env
 
 class Target:
-    def __init__(self, name, subdir, subproject, build_by_default, for_machine: MachineChoice):
+    def __init__(self, name, subdir, subproject, build_by_default, for_machine               ):
         if has_path_sep(name):
             # Fix failing test 53 when this becomes an error.
             mlog.warning('''Target "%s" has a path separator in its name.
@@ -355,22 +355,22 @@ a hard error in the future.''' % name)
         if not hasattr(self, 'typename'):
             raise RuntimeError('Target type is not set for target class "{}". This is a bug'.format(type(self).__name__))
 
-    def __lt__(self, other: T.Any) -> T.Union[bool, 'NotImplemented']:
+    def __lt__(self, other       )                                   :
         if not hasattr(other, 'get_id') and not callable(other.get_id):
             return NotImplemented
         return self.get_id() < other.get_id()
 
-    def __le__(self, other: T.Any) -> T.Union[bool, 'NotImplemented']:
+    def __le__(self, other       )                                   :
         if not hasattr(other, 'get_id') and not callable(other.get_id):
             return NotImplemented
         return self.get_id() <= other.get_id()
 
-    def __gt__(self, other: T.Any) -> T.Union[bool, 'NotImplemented']:
+    def __gt__(self, other       )                                   :
         if not hasattr(other, 'get_id') and not callable(other.get_id):
             return NotImplemented
         return self.get_id() > other.get_id()
 
-    def __ge__(self, other: T.Any) -> T.Union[bool, 'NotImplemented']:
+    def __ge__(self, other       )                                   :
         if not hasattr(other, 'get_id') and not callable(other.get_id):
             return NotImplemented
         return self.get_id() >= other.get_id()
@@ -443,7 +443,7 @@ a hard error in the future.''' % name)
 
         self.option_overrides = self.parse_overrides(kwargs)
 
-    def parse_overrides(self, kwargs) -> dict:
+    def parse_overrides(self, kwargs)        :
         result = {}
         overrides = stringlistify(kwargs.get('override_options', []))
         for o in overrides:
@@ -455,13 +455,13 @@ a hard error in the future.''' % name)
             result[k] = v
         return result
 
-    def is_linkable_target(self) -> bool:
+    def is_linkable_target(self)        :
         return False
 
 class BuildTarget(Target):
     known_kwargs = known_build_target_kwargs
 
-    def __init__(self, name, subdir, subproject, for_machine: MachineChoice, sources, objects, environment, kwargs):
+    def __init__(self, name, subdir, subproject, for_machine               , sources, objects, environment, kwargs):
         super().__init__(name, subdir, subproject, True, for_machine)
         unity_opt = environment.coredata.get_builtin_option('unity')
         self.is_unity = unity_opt == 'on' or (unity_opt == 'subprojects' and subproject != '')
@@ -541,9 +541,9 @@ class BuildTarget(Target):
             if isinstance(s, (str, File, ExtractedObjects)):
                 self.objects.append(s)
             elif isinstance(s, (GeneratedList, CustomTarget)):
-                msg = 'Generated files are not allowed in the \'objects\' kwarg ' + \
-                    'for target {!r}.\nIt is meant only for '.format(self.name) + \
-                    'pre-built object files that are shipped with the\nsource ' + \
+                msg = 'Generated files are not allowed in the \'objects\' kwarg ' +\
+                    'for target {!r}.\nIt is meant only for '.format(self.name) +\
+                    'pre-built object files that are shipped with the\nsource ' +\
                     'tree. Try adding it in the list of sources.'
                 raise InvalidArguments(msg)
             else:
@@ -827,7 +827,7 @@ just like those detected with the dependency() function.''')
         for linktarget in lwhole:
             self.link_whole(linktarget)
 
-        c_pchlist, cpp_pchlist, clist, cpplist, cudalist, cslist, valalist,  objclist, objcpplist, fortranlist, rustlist \
+        c_pchlist, cpp_pchlist, clist, cpplist, cudalist, cslist, valalist,  objclist, objcpplist, fortranlist, rustlist\
             = extract_as_list(kwargs, 'c_pch', 'cpp_pch', 'c_args', 'cpp_args', 'cuda_args', 'cs_args', 'vala_args', 'objc_args',
                               'objcpp_args', 'fortran_args', 'rust_args')
 
@@ -1171,7 +1171,7 @@ You probably should put it in link_with instead.''')
                 raise MesonException('File %s does not exist.' % f)
         self.pch[language] = pchlist
 
-    def add_include_dirs(self, args, set_is_system: T.Optional[str] = None):
+    def add_include_dirs(self, args, set_is_system                  = None):
         ids = []
         for a in args:
             # FIXME same hack, forcibly unpack from holder.
@@ -1200,7 +1200,7 @@ You probably should put it in link_with instead.''')
     def get_aliases(self):
         return {}
 
-    def get_langs_used_by_deps(self) -> T.List[str]:
+    def get_langs_used_by_deps(self)               :
         '''
         Sometimes you want to link to a C++ library that exports C API, which
         means the linker must link in the C++ stdlib, and we must use a C++
@@ -1474,7 +1474,7 @@ class GeneratedList:
 class Executable(BuildTarget):
     known_kwargs = known_exe_kwargs
 
-    def __init__(self, name, subdir, subproject, for_machine: MachineChoice, sources, objects, environment, kwargs):
+    def __init__(self, name, subdir, subproject, for_machine               , sources, objects, environment, kwargs):
         self.typename = 'executable'
         if 'pie' not in kwargs and 'b_pie' in environment.coredata.base_options:
             kwargs['pie'] = environment.coredata.base_options['b_pie'].value
@@ -1583,7 +1583,7 @@ class Executable(BuildTarget):
 class StaticLibrary(BuildTarget):
     known_kwargs = known_stlib_kwargs
 
-    def __init__(self, name, subdir, subproject, for_machine: MachineChoice, sources, objects, environment, kwargs):
+    def __init__(self, name, subdir, subproject, for_machine               , sources, objects, environment, kwargs):
         self.typename = 'static library'
         if 'pic' not in kwargs and 'b_staticpic' in environment.coredata.base_options:
             kwargs['pic'] = environment.coredata.base_options['b_staticpic'].value
@@ -1643,7 +1643,7 @@ class StaticLibrary(BuildTarget):
 class SharedLibrary(BuildTarget):
     known_kwargs = known_shlib_kwargs
 
-    def __init__(self, name, subdir, subproject, for_machine: MachineChoice, sources, objects, environment, kwargs):
+    def __init__(self, name, subdir, subproject, for_machine               , sources, objects, environment, kwargs):
         self.typename = 'shared library'
         self.soversion = None
         self.ltversion = None
@@ -1968,7 +1968,7 @@ class SharedLibrary(BuildTarget):
 class SharedModule(SharedLibrary):
     known_kwargs = known_shmod_kwargs
 
-    def __init__(self, name, subdir, subproject, for_machine: MachineChoice, sources, objects, environment, kwargs):
+    def __init__(self, name, subdir, subproject, for_machine               , sources, objects, environment, kwargs):
         if 'version' in kwargs:
             raise MesonException('Shared modules must not specify the version kwarg.')
         if 'soversion' in kwargs:
@@ -2100,13 +2100,13 @@ class CustomTarget(Target):
             if has_path_sep(i):
                 raise InvalidArguments('Output {!r} must not contain a path segment.'.format(i))
             if '@INPUT@' in i or '@INPUT0@' in i:
-                m = 'Output cannot contain @INPUT@ or @INPUT0@, did you ' \
+                m = 'Output cannot contain @INPUT@ or @INPUT0@, did you '\
                     'mean @PLAINNAME@ or @BASENAME@?'
                 raise InvalidArguments(m)
             # We already check this during substitution, but the error message
             # will be unclear/confusing, so check it here.
             if len(inputs) != 1 and ('@PLAINNAME@' in i or '@BASENAME@' in i):
-                m = "Output cannot contain @PLAINNAME@ or @BASENAME@ when " \
+                m = "Output cannot contain @PLAINNAME@ or @BASENAME@ when "\
                     "there is more than one input (we can't know which to use)"
                 raise InvalidArguments(m)
         self.outputs = substitute_values(self.outputs, values)
@@ -2299,7 +2299,7 @@ class AliasTarget(RunTarget):
 class Jar(BuildTarget):
     known_kwargs = known_jar_kwargs
 
-    def __init__(self, name, subdir, subproject, for_machine: MachineChoice, sources, objects, environment, kwargs):
+    def __init__(self, name, subdir, subproject, for_machine               , sources, objects, environment, kwargs):
         self.typename = 'jar'
         super().__init__(name, subdir, subproject, for_machine, sources, objects, environment, kwargs)
         for s in self.sources:
@@ -2448,8 +2448,8 @@ class RunScript(dict):
         self['args'] = args
 
 class TestSetup:
-    def __init__(self, exe_wrapper: T.Optional[T.List[str]], gdb: bool,
-                 timeout_multiplier: int, env: EnvironmentVariables):
+    def __init__(self, exe_wrapper                         , gdb      ,
+                 timeout_multiplier     , env                      ):
         self.exe_wrapper = exe_wrapper
         self.gdb = gdb
         self.timeout_multiplier = timeout_multiplier
@@ -2476,7 +2476,7 @@ def get_sources_string_names(sources, backend):
             raise AssertionError('Unknown source type: {!r}'.format(s))
     return names
 
-def load(build_dir: str) -> Build:
+def load(build_dir     )         :
     filename = os.path.join(build_dir, 'meson-private', 'build.dat')
     load_fail_msg = 'Build data file {!r} is corrupted. Try with a fresh build tree.'.format(filename)
     nonexisting_fail_msg = 'No such build data file as "{!r}".'.format(filename)

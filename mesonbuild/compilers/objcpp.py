@@ -15,7 +15,7 @@
 import os.path, subprocess
 import typing as T
 
-from ..mesonlib import EnvironmentException, MachineChoice
+from ..mesonlib import EnvironmentException
 
 from .mixins.clike import CLikeCompiler
 from .compilers import Compiler
@@ -23,15 +23,15 @@ from .mixins.gnu import GnuCompiler
 from .mixins.clang import ClangCompiler
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
+    pass
 
 class ObjCPPCompiler(CLikeCompiler, Compiler):
 
     language = 'objcpp'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross: bool, info: 'MachineInfo',
-                 exe_wrap: T.Optional[str], **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross      , info               ,
+                 exe_wrap                 , **kwargs):
         Compiler.__init__(self, exelist, version, for_machine, info, **kwargs)
         CLikeCompiler.__init__(self, is_cross, exe_wrap)
 
@@ -66,8 +66,8 @@ class ObjCPPCompiler(CLikeCompiler, Compiler):
 
 
 class GnuObjCPPCompiler(GnuCompiler, ObjCPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None,
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None,
                  defines=None, **kwargs):
         ObjCPPCompiler.__init__(self, exelist, version, for_machine, is_cross, info, exe_wrapper, **kwargs)
         GnuCompiler.__init__(self, defines)
@@ -79,8 +79,8 @@ class GnuObjCPPCompiler(GnuCompiler, ObjCPPCompiler):
 
 
 class ClangObjCPPCompiler(ClangCompiler, ObjCPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None,
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None,
                  **kwargs):
         ObjCPPCompiler.__init__(self, exelist, version, for_machine, is_cross, info, exe_wrapper, **kwargs)
         ClangCompiler.__init__(self)

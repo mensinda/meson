@@ -31,7 +31,6 @@ from pathlib import Path, PurePath
 from .. import mlog
 from .. import mesonlib
 from ..compilers import clib_langs
-from ..environment import BinaryTable, Environment, MachineInfo
 from ..cmake import CMakeExecutor, CMakeTraceParser, CMakeException
 from ..mesonlib import MachineChoice, MesonException, OrderedSet, PerMachine
 from ..mesonlib import Popen_safe, version_compare_many, version_compare, listify, stringlistify, extract_as_list, split_args
@@ -104,7 +103,7 @@ class Dependency:
         return methods
 
     @classmethod
-    def _process_include_type_kw(cls, kwargs) -> str:
+    def _process_include_type_kw(cls, kwargs)       :
         if 'include_type' not in kwargs:
             return 'preserve'
         if not isinstance(kwargs['include_type'], str):
@@ -152,7 +151,7 @@ class Dependency:
             return converted
         return self.compile_args
 
-    def get_link_args(self, raw: bool = False) -> T.List[str]:
+    def get_link_args(self, raw       = False)               :
         if raw and self.raw_link_args is not None:
             return self.raw_link_args
         return self.link_args
@@ -178,7 +177,7 @@ class Dependency:
         else:
             return 'unknown'
 
-    def get_include_type(self) -> str:
+    def get_include_type(self)       :
         return self.include_type
 
     def get_exe_args(self, compiler):
@@ -190,9 +189,9 @@ class Dependency:
     def get_configtool_variable(self, variable_name):
         raise DependencyException('{!r} is not a config-tool dependency'.format(self.name))
 
-    def get_partial_dependency(self, *, compile_args: bool = False,
-                               link_args: bool = False, links: bool = False,
-                               includes: bool = False, sources: bool = False):
+    def get_partial_dependency(self, *, compile_args       = False,
+                               link_args       = False, links       = False,
+                               includes       = False, sources       = False):
         """Create a new dependency that contains part of the parent dependency.
 
         The following options can be inherited:
@@ -208,9 +207,9 @@ class Dependency:
         """
         raise RuntimeError('Unreachable code in partial_dependency called')
 
-    def _add_sub_dependency(self, dep_type: T.Type['Dependency'], env: Environment,
-                            kwargs: T.Dict[str, T.Any], *,
-                            method: DependencyMethods = DependencyMethods.AUTO) -> None:
+    def _add_sub_dependency(self, dep_type                      , env             ,
+                            kwargs                    , *,
+                            method                    = DependencyMethods.AUTO)        :
         """Add an internal dependency of of the given type.
 
         This method is intended to simplify cases of adding a dependency on
@@ -222,14 +221,14 @@ class Dependency:
         kwargs['method'] = method
         self.ext_deps.append(dep_type(env, kwargs))
 
-    def get_variable(self, *, cmake: T.Optional[str] = None, pkgconfig: T.Optional[str] = None,
-                     configtool: T.Optional[str] = None, default_value: T.Optional[str] = None,
-                     pkgconfig_define: T.Optional[T.List[str]] = None) -> T.Union[str, T.List[str]]:
+    def get_variable(self, *, cmake                  = None, pkgconfig                  = None,
+                     configtool                  = None, default_value                  = None,
+                     pkgconfig_define                          = None)                             :
         if default_value is not None:
             return default_value
         raise DependencyException('No default provided for dependency {!r}, which is not pkg-config, cmake, or config-tool based.'.format(self))
 
-    def generate_system_dependency(self, include_type: str) -> T.Type['Dependency']:
+    def generate_system_dependency(self, include_type     )                        :
         new_dep = copy.deepcopy(self)
         new_dep.include_type = self._process_include_type_kw({'include_type': include_type})
         return new_dep
@@ -255,9 +254,9 @@ class InternalDependency(Dependency):
         raise DependencyException('Method "get_configtool_variable()" is '
                                   'invalid for an internal dependency')
 
-    def get_partial_dependency(self, *, compile_args: bool = False,
-                               link_args: bool = False, links: bool = False,
-                               includes: bool = False, sources: bool = False):
+    def get_partial_dependency(self, *, compile_args       = False,
+                               link_args       = False, links       = False,
+                               includes       = False, sources       = False):
         final_compile_args = self.compile_args.copy() if compile_args else []
         final_link_args = self.link_args.copy() if link_args else []
         final_libraries = self.libraries.copy() if links else []
@@ -304,7 +303,7 @@ class ExternalDependency(Dependency, HasNativeKwarg):
         # else try to pick something that looks usable.
         if self.language:
             if self.language not in compilers:
-                m = self.name.capitalize() + ' requires a {0} compiler, but ' \
+                m = self.name.capitalize() + ' requires a {0} compiler, but '\
                     '{0} is not in the list of project languages'
                 raise DependencyException(m.format(self.language.capitalize()))
             self.clib_compiler = compilers[self.language]
@@ -319,9 +318,9 @@ class ExternalDependency(Dependency, HasNativeKwarg):
     def get_compiler(self):
         return self.clib_compiler
 
-    def get_partial_dependency(self, *, compile_args: bool = False,
-                               link_args: bool = False, links: bool = False,
-                               includes: bool = False, sources: bool = False):
+    def get_partial_dependency(self, *, compile_args       = False,
+                               link_args       = False, links       = False,
+                               includes       = False, sources       = False):
         new = copy.copy(self)
         if not compile_args:
             new.compile_args = []
@@ -363,7 +362,7 @@ class ExternalDependency(Dependency, HasNativeKwarg):
                     raise DependencyException(m.format(self.name, self.version_reqs))
 
             else:
-                (self.is_found, not_found, found) = \
+                (self.is_found, not_found, found) =\
                     version_compare_many(self.version, self.version_reqs)
                 if not self.is_found:
                     found_msg = ['Dependency', mlog.bold(self.name), 'found:']
@@ -388,9 +387,9 @@ class NotFoundDependency(Dependency):
         self.name = 'not-found'
         self.is_found = False
 
-    def get_partial_dependency(self, *, compile_args: bool = False,
-                               link_args: bool = False, links: bool = False,
-                               includes: bool = False, sources: bool = False):
+    def get_partial_dependency(self, *, compile_args       = False,
+                               link_args       = False, links       = False,
+                               includes       = False, sources       = False):
         return copy.copy(self)
 
 
@@ -553,9 +552,9 @@ class ConfigToolDependency(ExternalDependency):
     def log_tried(self):
         return self.type_name
 
-    def get_variable(self, *, cmake: T.Optional[str] = None, pkgconfig: T.Optional[str] = None,
-                     configtool: T.Optional[str] = None, default_value: T.Optional[str] = None,
-                     pkgconfig_define: T.Optional[T.List[str]] = None) -> T.Union[str, T.List[str]]:
+    def get_variable(self, *, cmake                  = None, pkgconfig                  = None,
+                     configtool                  = None, default_value                  = None,
+                     pkgconfig_define                          = None)                             :
         if configtool:
             # In the not required case '' (empty string) will be returned if the
             # variable is not found. Since '' is a valid value to return we
@@ -704,7 +703,7 @@ class PkgConfigDependency(ExternalDependency):
             cache[(self.pkgbin, targs, fenv)] = self._call_pkgbin_real(args, env)
         return cache[(self.pkgbin, targs, fenv)]
 
-    def _convert_mingw_paths(self, args: T.List[str]) -> T.List[str]:
+    def _convert_mingw_paths(self, args             )               :
         '''
         Both MSVC and native Python on Windows cannot handle MinGW-esque /c/foo
         paths so convert them to C:/foo. We cannot resolve other paths starting
@@ -1006,9 +1005,9 @@ class PkgConfigDependency(ExternalDependency):
     def log_tried(self):
         return self.type_name
 
-    def get_variable(self, *, cmake: T.Optional[str] = None, pkgconfig: T.Optional[str] = None,
-                     configtool: T.Optional[str] = None, default_value: T.Optional[str] = None,
-                     pkgconfig_define: T.Optional[T.List[str]] = None) -> T.Union[str, T.List[str]]:
+    def get_variable(self, *, cmake                  = None, pkgconfig                  = None,
+                     configtool                  = None, default_value                  = None,
+                     pkgconfig_define                          = None)                             :
         if pkgconfig:
             kwargs = {}
             if default_value is not None:
@@ -1036,25 +1035,25 @@ class CMakeDependency(ExternalDependency):
     def _gen_exception(self, msg):
         return DependencyException('Dependency {} not found: {}'.format(self.name, msg))
 
-    def _main_cmake_file(self) -> str:
+    def _main_cmake_file(self)       :
         return 'CMakeLists.txt'
 
-    def _extra_cmake_opts(self) -> T.List[str]:
+    def _extra_cmake_opts(self)               :
         return []
 
-    def _map_module_list(self, modules: T.List[T.Tuple[str, bool]]) -> T.List[T.Tuple[str, bool]]:
+    def _map_module_list(self, modules                            )                              :
         # Map the input module list to something else
         # This function will only be executed AFTER the initial CMake
         # interpreter pass has completed. Thus variables defined in the
         # CMakeLists.txt can be accessed here.
         return modules
 
-    def _original_module_name(self, module: str) -> str:
+    def _original_module_name(self, module     )       :
         # Reverse the module mapping done by _map_module_list for
         # one module
         return module
 
-    def __init__(self, name: str, environment: Environment, kwargs, language: str = None):
+    def __init__(self, name     , environment             , kwargs, language      = None):
         if language is None:
             if kwargs.get('native', False):
                 if 'c' in environment.coredata.compilers.build.keys():
@@ -1203,7 +1202,7 @@ class CMakeDependency(ExternalDependency):
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def _cached_listdir(path: str) -> T.Tuple[T.Tuple[str, str]]:
+    def _cached_listdir(path     )                              :
         try:
             return tuple((x, str(x).lower()) for x in os.listdir(path))
         except OSError:
@@ -1211,17 +1210,17 @@ class CMakeDependency(ExternalDependency):
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def _cached_isdir(path: str) -> bool:
+    def _cached_isdir(path     )        :
         try:
             return os.path.isdir(path)
         except OSError:
             return False
 
-    def _preliminary_find_check(self, name: str, module_path: T.List[str], prefix_path: T.List[str], machine: MachineInfo) -> bool:
+    def _preliminary_find_check(self, name     , module_path             , prefix_path             , machine             )        :
         lname = str(name).lower()
 
         # Checks <path>, <path>/cmake, <path>/CMake
-        def find_module(path: str) -> bool:
+        def find_module(path     )        :
             for i in [path, os.path.join(path, 'cmake'), os.path.join(path, 'CMake')]:
                 if not self._cached_isdir(i):
                     continue
@@ -1232,7 +1231,7 @@ class CMakeDependency(ExternalDependency):
             return False
 
         # Search in <path>/(lib/<arch>|lib*|share) for cmake files
-        def search_lib_dirs(path: str) -> bool:
+        def search_lib_dirs(path     )        :
             for i in [os.path.join(path, x) for x in self.cmakeinfo['common_paths']]:
                 if not self._cached_isdir(i):
                     continue
@@ -1295,7 +1294,7 @@ class CMakeDependency(ExternalDependency):
 
         return False
 
-    def _detect_dep(self, name: str, modules: T.List[T.Tuple[str, bool]], args: T.List[str]):
+    def _detect_dep(self, name     , modules                            , args             ):
         # Detect a dependency with CMake using the '--find-package' mode
         # and the trace output (stderr)
         #
@@ -1488,7 +1487,7 @@ class CMakeDependency(ExternalDependency):
         self.compile_args = compileOptions + compileDefinitions + ['-I{}'.format(x) for x in incDirs]
         self.link_args = libraries
 
-    def _setup_cmake_dir(self, cmake_file: str) -> str:
+    def _setup_cmake_dir(self, cmake_file     )       :
         # Setup the CMake build environment and return the "build" directory
         build_dir = Path(self.cmake_root_dir) / 'cmake_{}'.format(self.name)
         build_dir.mkdir(parents=True, exist_ok=True)
@@ -1530,7 +1529,7 @@ project(MesonTemp LANGUAGES {})
 
         return str(build_dir)
 
-    def _call_cmake(self, args, cmake_file: str, env=None):
+    def _call_cmake(self, args, cmake_file     , env=None):
         build_dir = self._setup_cmake_dir(cmake_file)
         return self.cmakebin.call_with_fake_build(args, build_dir, env=env)
 
@@ -1541,16 +1540,16 @@ project(MesonTemp LANGUAGES {})
     def log_tried(self):
         return self.type_name
 
-    def log_details(self) -> str:
+    def log_details(self)       :
         modules = [self._original_module_name(x) for x in self.found_modules]
         modules = sorted(set(modules))
         if modules:
             return 'modules: ' + ', '.join(modules)
         return ''
 
-    def get_variable(self, *, cmake: T.Optional[str] = None, pkgconfig: T.Optional[str] = None,
-                     configtool: T.Optional[str] = None, default_value: T.Optional[str] = None,
-                     pkgconfig_define: T.Optional[T.List[str]] = None) -> T.Union[str, T.List[str]]:
+    def get_variable(self, *, cmake                  = None, pkgconfig                  = None,
+                     configtool                  = None, default_value                  = None,
+                     pkgconfig_define                          = None)                             :
         if cmake:
             try:
                 v = self.traceparser.vars[cmake]
@@ -1765,9 +1764,9 @@ class ExternalProgram:
     # An 'ExternalProgram' always runs on the build machine
     for_machine = MachineChoice.BUILD
 
-    def __init__(self, name: str, command: T.Optional[T.List[str]] = None,
-                 silent: bool = False, search_dir: T.Optional[str] = None,
-                 extra_search_dirs: T.Optional[T.List[str]] = None):
+    def __init__(self, name     , command                          = None,
+                 silent       = False, search_dir                  = None,
+                 extra_search_dirs                          = None):
         self.name = name
         if command is not None:
             self.command = listify(command)
@@ -1799,16 +1798,16 @@ class ExternalProgram:
             else:
                 mlog.log('Program', mlog.bold(name), 'found:', mlog.red('NO'))
 
-    def __repr__(self) -> str:
+    def __repr__(self)       :
         r = '<{} {!r} -> {!r}>'
         return r.format(self.__class__.__name__, self.name, self.command)
 
-    def description(self) -> str:
+    def description(self)       :
         '''Human friendly description of the command'''
         return ' '.join(self.command)
 
     @classmethod
-    def from_bin_list(cls, bt: BinaryTable, name):
+    def from_bin_list(cls, bt             , name):
         command = bt.lookup_entry(name)
         if command is None:
             return NonExistingExternalProgram()
@@ -1962,7 +1961,7 @@ class ExternalProgram:
         # all executables whether in PATH or with an absolute path
         return [command]
 
-    def found(self) -> bool:
+    def found(self)        :
         return self.command[0] is not None
 
     def get_command(self):
@@ -2035,14 +2034,14 @@ class ExternalLibrary(ExternalDependency):
         '''
         # Using a vala library in a non-vala target, or a non-vala library in a vala target
         # XXX: This should be extended to other non-C linkers such as Rust
-        if (self.language == 'vala' and language != 'vala') or \
+        if (self.language == 'vala' and language != 'vala') or\
            (language == 'vala' and self.language != 'vala'):
             return []
         return super().get_link_args(**kwargs)
 
-    def get_partial_dependency(self, *, compile_args: bool = False,
-                               link_args: bool = False, links: bool = False,
-                               includes: bool = False, sources: bool = False):
+    def get_partial_dependency(self, *, compile_args       = False,
+                               link_args       = False, links       = False,
+                               includes       = False, sources       = False):
         # External library only has link_args, so ignore the rest of the
         # interface.
         new = copy.copy(self)
@@ -2153,7 +2152,7 @@ class ExtraFrameworkDependency(ExternalDependency):
         return 'framework'
 
 
-def get_dep_identifier(name, kwargs) -> T.Tuple:
+def get_dep_identifier(name, kwargs)           :
     identifier = (name, )
     for key, value in kwargs.items():
         # 'version' is irrelevant for caching; the caller must check version matches
@@ -2267,7 +2266,7 @@ def find_external_dependency(name, env, kwargs):
     return NotFoundDependency(env)
 
 
-def _build_external_dependency_list(name, env: Environment, kwargs: T.Dict[str, T.Any]) -> list:
+def _build_external_dependency_list(name, env             , kwargs                    )        :
     # First check if the method is valid
     if 'method' in kwargs and kwargs['method'] not in [e.value for e in DependencyMethods]:
         raise DependencyException('method {!r} is invalid'.format(kwargs['method']))
@@ -2324,7 +2323,7 @@ def _build_external_dependency_list(name, env: Environment, kwargs: T.Dict[str, 
     return candidates
 
 
-def sort_libpaths(libpaths: T.List[str], refpaths: T.List[str]) -> T.List[str]:
+def sort_libpaths(libpaths             , refpaths             )               :
     """Sort <libpaths> according to <refpaths>
 
     It is intended to be used to sort -L flags returned by pkg-config.
@@ -2348,7 +2347,7 @@ def sort_libpaths(libpaths: T.List[str], refpaths: T.List[str]) -> T.List[str]:
     return sorted(libpaths, key=key_func)
 
 
-def strip_system_libdirs(environment, for_machine: MachineChoice, link_args):
+def strip_system_libdirs(environment, for_machine               , link_args):
     """Remove -L<system path> arguments.
 
     leaving these in will break builds where a user has a version of a library

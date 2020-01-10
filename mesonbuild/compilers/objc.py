@@ -15,7 +15,7 @@
 import os.path, subprocess
 import typing as T
 
-from ..mesonlib import EnvironmentException, MachineChoice
+from ..mesonlib import EnvironmentException
 
 from .compilers import Compiler
 from .mixins.clike import CLikeCompiler
@@ -23,16 +23,16 @@ from .mixins.gnu import GnuCompiler
 from .mixins.clang import ClangCompiler
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
+    pass
 
 
 class ObjCCompiler(CLikeCompiler, Compiler):
 
     language = 'objc'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross: bool, info: 'MachineInfo',
-                 exe_wrap: T.Optional[str], **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross      , info               ,
+                 exe_wrap                 , **kwargs):
         Compiler.__init__(self, exelist, version, for_machine, info, **kwargs)
         CLikeCompiler.__init__(self, is_cross, exe_wrap)
 
@@ -66,8 +66,8 @@ class ObjCCompiler(CLikeCompiler, Compiler):
 
 
 class GnuObjCCompiler(GnuCompiler, ObjCCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None,
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None,
                  defines=None, **kwargs):
         ObjCCompiler.__init__(self, exelist, version, for_machine, is_cross,
                               info, exe_wrapper, **kwargs)
@@ -80,8 +80,8 @@ class GnuObjCCompiler(GnuCompiler, ObjCCompiler):
 
 
 class ClangObjCCompiler(ClangCompiler, ObjCCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None,
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None,
                  **kwargs):
         ObjCCompiler.__init__(self, exelist, version, for_machine, is_cross,
                               info, exe_wrapper, **kwargs)

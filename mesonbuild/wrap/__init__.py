@@ -48,10 +48,10 @@ class WrapMode(Enum):
     nodownload = 3
     forcefallback = 4
 
-    def __str__(self) -> str:
+    def __str__(self)       :
         return self.name
 
     @staticmethod
-    def from_string(mode_name: str):
+    def from_string(mode_name     ):
         g = string_to_value[mode_name]
         return WrapMode(g)

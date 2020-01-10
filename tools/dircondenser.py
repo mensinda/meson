@@ -32,14 +32,13 @@ to this:
 This directory must be run from source root as it touches run_unittests.py.
 '''
 
-import typing as T
 import os
 import sys
 import subprocess
 
 from glob import glob
 
-def get_entries() -> T.List[T.Tuple[int, str]]:
+def get_entries()                             :
     entries = []
     for e in glob('*'):
         if not os.path.isdir(e):
@@ -53,7 +52,7 @@ def get_entries() -> T.List[T.Tuple[int, str]]:
     entries.sort()
     return entries
 
-def replace_source(sourcefile: str, replacements: T.List[T.Tuple[str, str]]):
+def replace_source(sourcefile     , replacements                           ):
     with open(sourcefile, 'r') as f:
         contents = f.read()
     for old_name, new_name in replacements:
@@ -61,7 +60,7 @@ def replace_source(sourcefile: str, replacements: T.List[T.Tuple[str, str]]):
     with open(sourcefile, 'w') as f:
         f.write(contents)
 
-def condense(dirname: str):
+def condense(dirname     ):
     curdir = os.getcwd()
     os.chdir(dirname)
     entries = get_entries()

@@ -122,12 +122,12 @@ class QtBaseModule(ExtensionModule):
     @FeatureNewKwargs('qt.preprocess', '0.49.0', ['rcc_extra_arguments'])
     @permittedKwargs({'moc_headers', 'moc_sources', 'uic_extra_arguments', 'moc_extra_arguments', 'rcc_extra_arguments', 'include_directories', 'dependencies', 'ui_files', 'qresources', 'method'})
     def preprocess(self, state, args, kwargs):
-        rcc_files, ui_files, moc_headers, moc_sources, uic_extra_arguments, moc_extra_arguments, rcc_extra_arguments, sources, include_directories, dependencies \
+        rcc_files, ui_files, moc_headers, moc_sources, uic_extra_arguments, moc_extra_arguments, rcc_extra_arguments, sources, include_directories, dependencies\
             = extract_as_list(kwargs, 'qresources', 'ui_files', 'moc_headers', 'moc_sources', 'uic_extra_arguments', 'moc_extra_arguments', 'rcc_extra_arguments', 'sources', 'include_directories', 'dependencies', pop = True)
         sources += args[1:]
         method = kwargs.get('method', 'auto')
         self._detect_tools(state.environment, method)
-        err_msg = "{0} sources specified and couldn't find {1}, " \
+        err_msg = "{0} sources specified and couldn't find {1}, "\
                   "please check your qt{2} installation"
         if (moc_headers or moc_sources) and not self.moc.found():
             raise MesonException(err_msg.format('MOC', 'moc-qt{}'.format(self.qt_version), self.qt_version))

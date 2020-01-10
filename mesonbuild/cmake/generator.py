@@ -14,7 +14,7 @@
 
 from .. import mesonlib
 
-def parse_generator_expressions(raw: str) -> str:
+def parse_generator_expressions(raw     )       :
     '''Parse CMake generator expressions
 
     Most generator expressions are simply ignored for
@@ -25,14 +25,14 @@ def parse_generator_expressions(raw: str) -> str:
     out = ''  # type: str
     i = 0     # type: int
 
-    def equal(arg: str) -> str:
+    def equal(arg     )       :
         col_pos = arg.find(',')
         if col_pos < 0:
             return '0'
         else:
             return '1' if arg[:col_pos] == arg[col_pos + 1:] else '0'
 
-    def vers_comp(op: str, arg: str) -> str:
+    def vers_comp(op     , arg     )       :
         col_pos = arg.find(',')
         if col_pos < 0:
             return '0'
@@ -76,7 +76,7 @@ def parse_generator_expressions(raw: str) -> str:
     }
 
     # Recursively evaluate generator expressions
-    def eval_generator_expressions() -> str:
+    def eval_generator_expressions()       :
         nonlocal i
         i += 2
 

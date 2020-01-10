@@ -140,11 +140,11 @@ def find_coverage_tools():
 
     return gcovr_exe, gcovr_new_rootdir, lcov_exe, genhtml_exe
 
-def detect_ninja(version: str = '1.5', log: bool = False) -> str:
+def detect_ninja(version      = '1.5', log       = False)       :
     r = detect_ninja_command_and_version(version, log)
     return r[0] if r else None
 
-def detect_ninja_command_and_version(version: str = '1.5', log: bool = False) -> (str, str):
+def detect_ninja_command_and_version(version      = '1.5', log       = False)              :
     env_ninja = os.environ.get('NINJA', None)
     for n in [env_ninja] if env_ninja else ['ninja', 'ninja-build', 'samu']:
         try:
@@ -168,7 +168,7 @@ def detect_ninja_command_and_version(version: str = '1.5', log: bool = False) ->
                 mlog.log('Found {}-{} at {}'.format(name, found, quote_arg(n)))
             return (n, found)
 
-def get_llvm_tool_names(tool: str) -> T.List[str]:
+def get_llvm_tool_names(tool     )               :
     # Ordered list of possible suffixes of LLVM executables to try. Start with
     # base, then try newest back to oldest (3.5 is arbitrary), and finally the
     # devel version. Please note that the development snapshot in Debian does
@@ -195,7 +195,7 @@ def get_llvm_tool_names(tool: str) -> T.List[str]:
         names.append(tool + suffix)
     return names
 
-def detect_scanbuild() -> T.List[str]:
+def detect_scanbuild()               :
     """ Look for scan-build binary on build platform
 
     First, if a SCANBUILD env variable has been provided, give it precedence
@@ -226,7 +226,7 @@ def detect_scanbuild() -> T.List[str]:
             return [tool]
     return []
 
-def detect_clangformat() -> T.List[str]:
+def detect_clangformat()               :
     """ Look for clang-format binary on build platform
 
     Do the same thing as detect_scanbuild to find clang-format except it
@@ -258,7 +258,7 @@ def detect_native_windows_arch():
             raise EnvironmentException('Unable to detect native OS architecture')
     return arch
 
-def detect_windows_arch(compilers: CompilersDict) -> str:
+def detect_windows_arch(compilers               )       :
     """
     Detecting the 'native' architecture of Windows is not a trivial task. We
     cannot trust that the architecture that Python is built for is the 'native'
@@ -298,7 +298,7 @@ def detect_windows_arch(compilers: CompilersDict) -> str:
             return 'x86'
     return os_arch
 
-def any_compiler_has_define(compilers: CompilersDict, define):
+def any_compiler_has_define(compilers               , define):
     for c in compilers.values():
         try:
             if c.has_builtin_define(define):
@@ -308,7 +308,7 @@ def any_compiler_has_define(compilers: CompilersDict, define):
             pass
     return False
 
-def detect_cpu_family(compilers: CompilersDict) -> str:
+def detect_cpu_family(compilers               )       :
     """
     Python is inconsistent in its platform module.
     It returns different values for the same cpu.
@@ -361,7 +361,7 @@ def detect_cpu_family(compilers: CompilersDict) -> str:
 
     return trial
 
-def detect_cpu(compilers: CompilersDict):
+def detect_cpu(compilers               ):
     if mesonlib.is_windows():
         trial = detect_windows_arch(compilers)
     elif mesonlib.is_freebsd() or mesonlib.is_netbsd() or mesonlib.is_openbsd():
@@ -398,7 +398,7 @@ def detect_msys2_arch():
         return os.environ['MSYSTEM_CARCH']
     return None
 
-def detect_machine_info(compilers: T.Optional[CompilersDict] = None) -> MachineInfo:
+def detect_machine_info(compilers                            = None)               :
     """Detect the machine we're running on
 
     If compilers are not provided, we cannot know as much. None out those
@@ -414,7 +414,7 @@ def detect_machine_info(compilers: T.Optional[CompilersDict] = None) -> MachineI
 
 # TODO make this compare two `MachineInfo`s purely. How important is the
 # `detect_cpu_family({})` distinction? It is the one impediment to that.
-def machine_info_can_run(machine_info: MachineInfo):
+def machine_info_can_run(machine_info             ):
     """Whether we can run binaries for this machine on the current machine.
 
     Can almost always run 32-bit binaries on 64-bit natively if the host
@@ -425,8 +425,8 @@ def machine_info_can_run(machine_info: MachineInfo):
     if machine_info.system != detect_system():
         return False
     true_build_cpu_family = detect_cpu_family({})
-    return \
-        (machine_info.cpu_family == true_build_cpu_family) or \
+    return\
+        (machine_info.cpu_family == true_build_cpu_family) or\
         ((true_build_cpu_family == 'x86_64') and (machine_info.cpu_family == 'x86'))
 
 def search_version(text):
@@ -617,7 +617,7 @@ class Environment:
         self.coredata.meson_command = mesonlib.meson_command
         self.first_invocation = True
 
-    def is_cross_build(self) -> bool:
+    def is_cross_build(self)        :
         return self.coredata.is_cross_build()
 
     def dump_coredata(self):
@@ -733,9 +733,9 @@ class Environment:
                 errmsg += '\nRunning "{0}" gave "{1}"'.format(c, e)
         raise EnvironmentException(errmsg)
 
-    def _guess_win_linker(self, compiler: T.List[str], comp_class: Compiler,
-                          for_machine: MachineChoice, *,
-                          use_linker_prefix: bool = True) -> 'DynamicLinker':
+    def _guess_win_linker(self, compiler             , comp_class          ,
+                          for_machine               , *,
+                          use_linker_prefix       = True)                   :
         self.coredata.add_lang_args(comp_class.language, comp_class, for_machine, self)
 
         # Explicitly pass logo here so that we can get the version of link.exe
@@ -792,9 +792,9 @@ class Environment:
                 "%PATH% variable to resolve this.")
         raise EnvironmentException('Unable to determine dynamic linker')
 
-    def _guess_nix_linker(self, compiler: T.List[str], comp_class: T.Type[Compiler],
-                          for_machine: MachineChoice, *,
-                          extra_args: T.Optional[T.List[str]] = None) -> 'DynamicLinker':
+    def _guess_nix_linker(self, compiler             , comp_class                  ,
+                          for_machine               , *,
+                          extra_args                          = None)                   :
         """Helper for guessing what linker to use on Unix-Like OSes.
 
         :compiler: Invocation to use to get linker
@@ -866,7 +866,7 @@ class Environment:
             raise EnvironmentException('Unable to determine dynamic linker')
         return linker
 
-    def _detect_c_or_cpp_compiler(self, lang: str, for_machine: MachineChoice) -> Compiler:
+    def _detect_c_or_cpp_compiler(self, lang     , for_machine               )            :
         popen_exceptions = {}
         compilers, ccache, exe_wrap = self._get_compilers(lang, for_machine)
         is_cross = not self.machines.matches_build_machine(for_machine)
@@ -1119,7 +1119,7 @@ class Environment:
             return cls(ccache + compiler, version, for_machine, is_cross, exe_wrap, host_compiler=cpp_compiler, info=info, linker=linker)
         raise EnvironmentException('Could not find suitable CUDA compiler: "' + ' '.join(compilers) + '"')
 
-    def detect_fortran_compiler(self, for_machine: MachineChoice):
+    def detect_fortran_compiler(self, for_machine               ):
         popen_exceptions = {}
         compilers, ccache, exe_wrap = self._get_compilers('fortran', for_machine)
         is_cross = not self.machines.matches_build_machine(for_machine)
@@ -1232,13 +1232,13 @@ class Environment:
     def get_scratch_dir(self):
         return self.scratch_dir
 
-    def detect_objc_compiler(self, for_machine: MachineInfo) -> 'Compiler':
+    def detect_objc_compiler(self, for_machine             )              :
         return self._detect_objc_or_objcpp_compiler(for_machine, True)
 
-    def detect_objcpp_compiler(self, for_machine: MachineInfo) -> 'Compiler':
+    def detect_objcpp_compiler(self, for_machine             )              :
         return self._detect_objc_or_objcpp_compiler(for_machine, False)
 
-    def _detect_objc_or_objcpp_compiler(self, for_machine: MachineInfo, objc: bool) -> 'Compiler':
+    def _detect_objc_or_objcpp_compiler(self, for_machine             , objc      )              :
         popen_exceptions = {}
         compilers, ccache, exe_wrap = self._get_compilers('objc' if objc else 'objcpp', for_machine)
         is_cross = not self.machines.matches_build_machine(for_machine)
@@ -1411,7 +1411,7 @@ class Environment:
 
         self._handle_exceptions(popen_exceptions, compilers)
 
-    def detect_d_compiler(self, for_machine: MachineChoice):
+    def detect_d_compiler(self, for_machine               ):
         info = self.machines[for_machine]
 
         # Detect the target architecture, required for proper architecture handling on Windows.
@@ -1526,7 +1526,7 @@ class Environment:
 
         raise EnvironmentException('Unknown compiler "' + ' '.join(exelist) + '"')
 
-    def compiler_from_language(self, lang: str, for_machine: MachineChoice):
+    def compiler_from_language(self, lang     , for_machine               ):
         if lang == 'c':
             comp = self.detect_c_compiler(for_machine)
         elif lang == 'cpp':
@@ -1555,7 +1555,7 @@ class Environment:
             comp = None
         return comp
 
-    def detect_compiler_for(self, lang: str, for_machine: MachineChoice):
+    def detect_compiler_for(self, lang     , for_machine               ):
         comp = self.compiler_from_language(lang, for_machine)
         if comp is not None:
             assert comp.for_machine == for_machine
@@ -1638,15 +1638,15 @@ class Environment:
     def get_build_dir(self):
         return self.build_dir
 
-    def get_import_lib_dir(self) -> str:
+    def get_import_lib_dir(self)       :
         "Install dir for the import library (library used for linking)"
         return self.get_libdir()
 
-    def get_shared_module_dir(self) -> str:
+    def get_shared_module_dir(self)       :
         "Install dir for shared modules that are loaded at runtime"
         return self.get_libdir()
 
-    def get_shared_lib_dir(self) -> str:
+    def get_shared_lib_dir(self)       :
         "Install dir for the shared library"
         m = self.machines.host
         # Windows has no RPATH or similar, so DLLs must be next to EXEs.
@@ -1654,32 +1654,32 @@ class Environment:
             return self.get_bindir()
         return self.get_libdir()
 
-    def get_static_lib_dir(self) -> str:
+    def get_static_lib_dir(self)       :
         "Install dir for the static library"
         return self.get_libdir()
 
-    def get_prefix(self) -> str:
+    def get_prefix(self)       :
         return self.coredata.get_builtin_option('prefix')
 
-    def get_libdir(self) -> str:
+    def get_libdir(self)       :
         return self.coredata.get_builtin_option('libdir')
 
-    def get_libexecdir(self) -> str:
+    def get_libexecdir(self)       :
         return self.coredata.get_builtin_option('libexecdir')
 
-    def get_bindir(self) -> str:
+    def get_bindir(self)       :
         return self.coredata.get_builtin_option('bindir')
 
-    def get_includedir(self) -> str:
+    def get_includedir(self)       :
         return self.coredata.get_builtin_option('includedir')
 
-    def get_mandir(self) -> str:
+    def get_mandir(self)       :
         return self.coredata.get_builtin_option('mandir')
 
-    def get_datadir(self) -> str:
+    def get_datadir(self)       :
         return self.coredata.get_builtin_option('datadir')
 
-    def get_compiler_system_dirs(self, for_machine: MachineChoice):
+    def get_compiler_system_dirs(self, for_machine               ):
         for comp in self.coredata.compilers[for_machine].values():
             if isinstance(comp, compilers.ClangCompiler):
                 index = 1
@@ -1698,7 +1698,7 @@ class Environment:
         out = out.split('\n')[index].lstrip('libraries: =').split(':')
         return [os.path.normpath(p) for p in out]
 
-    def need_exe_wrapper(self, for_machine: MachineChoice = MachineChoice.HOST):
+    def need_exe_wrapper(self, for_machine                = MachineChoice.HOST):
         value = self.properties[for_machine].get('needs_exe_wrapper', None)
         if value is not None:
             return value

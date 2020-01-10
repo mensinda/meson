@@ -15,11 +15,10 @@
 import subprocess, os.path
 import typing as T
 
-from ..mesonlib import EnvironmentException, MachineChoice, Popen_safe
+from ..mesonlib import EnvironmentException, Popen_safe
 from .compilers import Compiler, rust_buildtype_args, clike_debug_args
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
     from ..environment import Environment  # noqa: F401
 
 rust_optimization_args = {'0': [],
@@ -35,8 +34,8 @@ class RustCompiler(Compiler):
     # rustc doesn't invoke the compiler itself, it doesn't need a LINKER_PREFIX
     language = 'rust'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None, **kwargs):
         super().__init__(exelist, version, for_machine, info, **kwargs)
         self.exe_wrapper = exe_wrapper
         self.id = 'rustc'

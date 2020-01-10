@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typing as T
 import os
 import re
 import subprocess
@@ -27,7 +26,7 @@ from .base import (DependencyException, DependencyMethods, ExternalDependency, E
 
 class MPIDependency(ExternalDependency):
 
-    def __init__(self, environment, kwargs: dict):
+    def __init__(self, environment, kwargs      ):
         language = kwargs.get('language', 'c')
         super().__init__('mpi', environment, language, kwargs)
         kwargs['required'] = False
@@ -118,7 +117,7 @@ class MPIDependency(ExternalDependency):
                     self.version, self.compile_args, self.link_args = result
             return
 
-    def _filter_compile_args(self, args: T.Sequence[str]) -> T.List[str]:
+    def _filter_compile_args(self, args                 )               :
         """
         MPI wrappers return a bunch of garbage args.
         Drop -O2 and everything that is not needed.
@@ -131,7 +130,7 @@ class MPIDependency(ExternalDependency):
 
         include_next = False
         for f in args:
-            if f.startswith(('-D', '-f') + multi_args) or f == '-pthread' \
+            if f.startswith(('-D', '-f') + multi_args) or f == '-pthread'\
                     or (f.startswith('-W') and f != '-Wall' and not f.startswith('-Werror')):
                 result.append(f)
                 if f in multi_args:
@@ -142,7 +141,7 @@ class MPIDependency(ExternalDependency):
                 result.append(f)
         return result
 
-    def _filter_link_args(self, args: T.Sequence[str], cid: str) -> T.List[str]:
+    def _filter_link_args(self, args                 , cid     )               :
         """
         MPI wrappers return a bunch of garbage args.
         Drop -O2 and everything that is not needed.
@@ -160,7 +159,7 @@ class MPIDependency(ExternalDependency):
         return result
 
     @staticmethod
-    def _is_link_arg(f: str, cid: str) -> bool:
+    def _is_link_arg(f     , cid     )        :
         if cid == 'intel-cl':
             return f == '/link' or f.startswith('/LIBPATH') or f.endswith('.lib')   # always .lib whether static or dynamic
         else:
@@ -168,7 +167,7 @@ class MPIDependency(ExternalDependency):
                     f == '-pthread' or
                     (f.startswith('-W') and f != '-Wall' and not f.startswith('-Werror')))
 
-    def _try_openmpi_wrapper(self, prog, cid: str):
+    def _try_openmpi_wrapper(self, prog, cid     ):
         # https://www.open-mpi.org/doc/v4.0/man1/mpifort.1.php
         if cid == 'intel-cl':  # IntelCl doesn't support OpenMPI
             return None
@@ -210,7 +209,7 @@ class MPIDependency(ExternalDependency):
 
         return version, cargs, libs
 
-    def _try_other_wrapper(self, prog, cid: str) -> T.Tuple[str, T.List[str], T.List[str]]:
+    def _try_other_wrapper(self, prog, cid     )                                          :
         prog = ExternalProgram(prog, silent=True)
         if not prog.found():
             return None
@@ -243,7 +242,7 @@ class MPIDependency(ExternalDependency):
 
         return version, args, args
 
-    def _try_msmpi(self) -> T.Tuple[str, T.List[str], T.List[str]]:
+    def _try_msmpi(self)                                          :
         if self.language == 'cpp':
             # MS-MPI does not support the C++ version of MPI, only the standard C API.
             return None

@@ -109,14 +109,14 @@ class GnomeModule(ExtensionModule):
             if hasattr(dep, 'held_object'):
                 dependencies[ii] = dep = dep.held_object
             if not isinstance(dep, (mesonlib.File, build.CustomTarget, build.CustomTargetIndex)):
-                m = 'Unexpected dependency type {!r} for gnome.compile_resources() ' \
-                    '"dependencies" argument.\nPlease pass the return value of ' \
+                m = 'Unexpected dependency type {!r} for gnome.compile_resources() '\
+                    '"dependencies" argument.\nPlease pass the return value of '\
                     'custom_target() or configure_file()'
                 raise MesonException(m.format(dep))
             if isinstance(dep, (build.CustomTarget, build.CustomTargetIndex)):
                 if not mesonlib.version_compare(glib_version, gresource_dep_needed_version):
-                    m = 'The "dependencies" argument of gnome.compile_resources() can not\n' \
-                        'be used with the current version of glib-compile-resources due to\n' \
+                    m = 'The "dependencies" argument of gnome.compile_resources() can not\n'\
+                        'be used with the current version of glib-compile-resources due to\n'\
                         '<https://bugzilla.gnome.org/show_bug.cgi?id=774368>'
                     raise MesonException(m)
 
@@ -134,9 +134,9 @@ class GnomeModule(ExtensionModule):
         elif isinstance(ifile, (interpreter.CustomTargetHolder,
                                 interpreter.CustomTargetIndexHolder,
                                 interpreter.GeneratedObjectsHolder)):
-            m = 'Resource xml files generated at build-time cannot be used ' \
-                'with gnome.compile_resources() because we need to scan ' \
-                'the xml for dependencies. Use configure_file() instead ' \
+            m = 'Resource xml files generated at build-time cannot be used '\
+                'with gnome.compile_resources() because we need to scan '\
+                'the xml for dependencies. Use configure_file() instead '\
                 'to generate it at configure-time.'
             raise MesonException(m)
         else:
@@ -410,7 +410,7 @@ class GnomeModule(ExtensionModule):
             raise MesonException('Gir target must be an executable or library')
 
         STATIC_BUILD_REQUIRED_VERSION = ">=1.58.1"
-        if isinstance(girtarget, (build.StaticLibrary)) and \
+        if isinstance(girtarget, (build.StaticLibrary)) and\
            not mesonlib.version_compare(
                self._get_gir_dep(state)[0].get_version(),
                STATIC_BUILD_REQUIRED_VERSION):
@@ -762,7 +762,7 @@ class GnomeModule(ExtensionModule):
         # ldflags will be misinterpreted by gir scanner (showing
         # spurious dependencies) but building GStreamer fails if they
         # are not used here.
-        dep_cflags, dep_internal_ldflags, dep_external_ldflags, gi_includes = \
+        dep_cflags, dep_internal_ldflags, dep_external_ldflags, gi_includes =\
             self._get_dependencies_flags(deps, state, depends, use_gir_args=True)
         cflags += list(self._get_scanner_cflags(dep_cflags))
         cflags += list(self._get_scanner_cflags(self._get_external_args_for_langs(state, [lc[0] for lc in langs_compilers])))
@@ -1041,7 +1041,7 @@ This will become a hard error in the future.''')
         deps = extract_as_list(kwargs, 'dependencies', unholder=True)
         cflags = []
         cflags.extend(mesonlib.stringlistify(kwargs.pop('c_args', [])))
-        deps_cflags, internal_ldflags, external_ldflags, gi_includes = \
+        deps_cflags, internal_ldflags, external_ldflags, gi_includes =\
             self._get_dependencies_flags(deps, state, depends, include_rpath=True)
         inc_dirs = mesonlib.extract_as_list(kwargs, 'include_directories')
         for incd in inc_dirs:
@@ -1313,7 +1313,7 @@ This will become a hard error in the future.''')
             h_sources = [h_template] + sources
             custom_kwargs['install'] = install_header
             if 'install_dir' not in custom_kwargs:
-                custom_kwargs['install_dir'] = \
+                custom_kwargs['install_dir'] =\
                     state.environment.coredata.get_builtin_option('includedir')
             h_target = self._make_mkenum_custom_target(state, h_sources,
                                                        h_output, h_cmd,
@@ -1342,7 +1342,7 @@ This will become a hard error in the future.''')
             generic_cmd = cmd + ['@INPUT@']
             custom_kwargs['install'] = install_header
             if 'install_dir' not in custom_kwargs:
-                custom_kwargs['install_dir'] = \
+                custom_kwargs['install_dir'] =\
                     state.environment.coredata.get_builtin_option('includedir')
             target = self._make_mkenum_custom_target(state, sources, basename,
                                                      generic_cmd, custom_kwargs)

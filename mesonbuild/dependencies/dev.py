@@ -21,7 +21,7 @@ import os
 import re
 
 from .. import mesonlib, mlog
-from ..mesonlib import version_compare, stringlistify, extract_as_list, MachineChoice
+from ..mesonlib import extract_as_list, stringlistify, version_compare
 from ..environment import get_llvm_tool_names
 from .base import (
     DependencyException, DependencyMethods, ExternalDependency, PkgConfigDependency,
@@ -29,10 +29,9 @@ from .base import (
 )
 from .misc import ThreadDependency
 
-import typing as T
 
 
-def get_shared_library_suffix(environment, for_machine: MachineChoice):
+def get_shared_library_suffix(environment, for_machine               ):
     """This is only guaranteed to work for languages that compile to machine
     code, not for languages like C# that use a bytecode and always end in .dll
     """
@@ -403,14 +402,14 @@ class LLVMDependencyCMake(CMakeDependency):
         self.compile_args += [x for x in temp if x not in self.compile_args]
         self._add_sub_dependency(ThreadDependency, env, kwargs)
 
-    def _main_cmake_file(self) -> str:
+    def _main_cmake_file(self)       :
         # Use a custom CMakeLists.txt for LLVM
         return 'CMakeListsLLVM.txt'
 
-    def _extra_cmake_opts(self) -> T.List[str]:
+    def _extra_cmake_opts(self)               :
         return ['-DLLVM_MESON_MODULES={}'.format(';'.join(self.llvm_modules + self.llvm_opt_modules))]
 
-    def _map_module_list(self, modules: T.List[T.Tuple[str, bool]]) -> T.List[T.Tuple[str, bool]]:
+    def _map_module_list(self, modules                            )                              :
         res = []
         for mod, required in modules:
             cm_targets = self.traceparser.get_cmake_var('MESON_LLVM_TARGETS_{}'.format(mod))
@@ -424,7 +423,7 @@ class LLVMDependencyCMake(CMakeDependency):
                 res += [(i, required)]
         return res
 
-    def _original_module_name(self, module: str) -> str:
+    def _original_module_name(self, module     )       :
         orig_name = self.traceparser.get_cmake_var('MESON_TARGET_TO_LLVM_{}'.format(module))
         if orig_name:
             return orig_name[0]

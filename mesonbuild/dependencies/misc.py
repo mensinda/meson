@@ -170,7 +170,7 @@ class BlocksDependency(ExternalDependency):
             self.compile_args = ['-fblocks']
             self.link_args = ['-lBlocksRuntime']
 
-            if not self.clib_compiler.has_header('Block.h', '', environment, disable_cache=True) or \
+            if not self.clib_compiler.has_header('Block.h', '', environment, disable_cache=True) or\
                not self.clib_compiler.find_library('BlocksRuntime', environment, []):
                 mlog.log(mlog.red('ERROR:'), 'BlocksRuntime not found.')
                 return

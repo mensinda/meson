@@ -37,7 +37,7 @@ from mesonbuild.coredata import backendlist
 
 NINJA_1_9_OR_NEWER = False
 
-def guess_backend(backend, msbuild_exe: str):
+def guess_backend(backend, msbuild_exe     ):
     # Auto-detect backend if unspecified
     backend_flags = []
     if backend is None:
@@ -60,7 +60,7 @@ def guess_backend(backend, msbuild_exe: str):
     return (backend, backend_flags)
 
 
-def _using_intelcl() -> bool:
+def _using_intelcl()        :
     """
     detect if intending to using Intel-Cl compilers (Intel compilers on Windows)
     Sufficient evidence of intent is that user is working in the Intel compiler

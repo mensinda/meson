@@ -19,7 +19,7 @@ import typing as T
 
 from .. import coredata
 from .. import mlog
-from ..mesonlib import MesonException, MachineChoice, version_compare
+from ..mesonlib import MesonException, version_compare
 
 from .compilers import (
     gnu_winlibs,
@@ -40,7 +40,7 @@ from .mixins.islinker import BasicLinkerIsCompilerMixin, LinkerEnvVarsMixin
 from .mixins.emscripten import EmscriptenMixin
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
+    pass
 
 
 def non_msvc_eh_options(eh, args):
@@ -61,8 +61,8 @@ class CPPCompiler(CLikeCompiler, Compiler):
 
     language = 'cpp'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice, is_cross: bool,
-                 info: 'MachineInfo', exe_wrap: T.Optional[str] = None, **kwargs):
+    def __init__(self, exelist, version, for_machine               , is_cross      ,
+                 info               , exe_wrap                  = None, **kwargs):
         # If a child ObjCPP class has already set it, don't set it ourselves
         Compiler.__init__(self, exelist, version, for_machine, info, **kwargs)
         CLikeCompiler.__init__(self, is_cross, exe_wrap)
@@ -153,8 +153,8 @@ class CPPCompiler(CLikeCompiler, Compiler):
 
 
 class ClangCPPCompiler(ClangCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross,
                              info, exe_wrapper, **kwargs)
         ClangCompiler.__init__(self)
@@ -202,8 +202,8 @@ class AppleClangCPPCompiler(ClangCPPCompiler):
 
 
 class EmscriptenCPPCompiler(LinkerEnvVarsMixin, EmscriptenMixin, BasicLinkerIsCompilerMixin, ClangCPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross: bool, info: 'MachineInfo', exe_wrapper=None, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross      , info               , exe_wrapper=None, **kwargs):
         if not is_cross:
             raise MesonException('Emscripten compiler can only be used for cross compilation.')
         ClangCPPCompiler.__init__(self, exelist=exelist, version=version,
@@ -220,8 +220,8 @@ class EmscriptenCPPCompiler(LinkerEnvVarsMixin, EmscriptenMixin, BasicLinkerIsCo
 
 
 class ArmclangCPPCompiler(ArmclangCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross, exe_wrapper, **kwargs)
         ArmclangCompiler.__init__(self)
         default_warn_args = ['-Wall', '-Winvalid-pch', '-Wnon-virtual-dtor']
@@ -256,8 +256,8 @@ class ArmclangCPPCompiler(ArmclangCompiler, CPPCompiler):
 
 
 class GnuCPPCompiler(GnuCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrap, defines, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrap, defines, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross, info, exe_wrap, **kwargs)
         GnuCompiler.__init__(self, defines)
         default_warn_args = ['-Wall', '-Winvalid-pch', '-Wnon-virtual-dtor']
@@ -312,15 +312,15 @@ class GnuCPPCompiler(GnuCompiler, CPPCompiler):
 
 
 class PGICPPCompiler(PGICompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross, info, exe_wrapper, **kwargs)
         PGICompiler.__init__(self)
 
 
 class ElbrusCPPCompiler(GnuCPPCompiler, ElbrusCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrapper=None,
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrapper=None,
                  defines=None, **kwargs):
         GnuCPPCompiler.__init__(self, exelist, version, for_machine,
                                 is_cross, info, exe_wrapper, defines,
@@ -353,8 +353,8 @@ class ElbrusCPPCompiler(GnuCPPCompiler, ElbrusCompiler):
 
 
 class IntelCPPCompiler(IntelGnuLikeCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrap, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrap, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross,
                              info, exe_wrap, **kwargs)
         IntelGnuLikeCompiler.__init__(self)
@@ -431,7 +431,7 @@ class VisualStudioLikeCPPCompilerMixin:
     def get_option_link_args(self, options):
         return options['cpp_winlibs'].value[:]
 
-    def _get_options_impl(self, opts, cpp_stds: T.List[str]):
+    def _get_options_impl(self, opts, cpp_stds             ):
         opts.update({'cpp_eh': coredata.UserComboOption('C++ exception handling type.',
                                                         ['none', 'default', 'a', 's', 'sc'],
                                                         'default'),
@@ -499,8 +499,8 @@ class CPP11AsCPP14Mixin:
 
 
 class VisualStudioCPPCompiler(CPP11AsCPP14Mixin, VisualStudioLikeCPPCompilerMixin, VisualStudioLikeCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross: bool, info: 'MachineInfo', exe_wrap, target, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross      , info               , exe_wrap, target, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross, info, exe_wrap, **kwargs)
         VisualStudioLikeCompiler.__init__(self, target)
         self.base_options = ['b_pch', 'b_vscrt'] # FIXME add lto, pgo and the like
@@ -533,8 +533,8 @@ class VisualStudioCPPCompiler(CPP11AsCPP14Mixin, VisualStudioLikeCPPCompilerMixi
         return args
 
 class ClangClCPPCompiler(CPP11AsCPP14Mixin, VisualStudioLikeCPPCompilerMixin, VisualStudioLikeCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrap, target, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrap, target, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross,
                              info, exe_wrap, **kwargs)
         VisualStudioLikeCompiler.__init__(self, target)
@@ -547,8 +547,8 @@ class ClangClCPPCompiler(CPP11AsCPP14Mixin, VisualStudioLikeCPPCompilerMixin, Vi
 
 class IntelClCPPCompiler(VisualStudioLikeCPPCompilerMixin, IntelVisualStudioLikeCompiler, CPPCompiler):
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrap, target, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrap, target, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross,
                              info, exe_wrap, **kwargs)
         IntelVisualStudioLikeCompiler.__init__(self, target)
@@ -560,8 +560,8 @@ class IntelClCPPCompiler(VisualStudioLikeCPPCompilerMixin, IntelVisualStudioLike
 
 
 class ArmCPPCompiler(ArmCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrap=None, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrap=None, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross,
                              info, exe_wrap, **kwargs)
         ArmCompiler.__init__(self)
@@ -590,8 +590,8 @@ class ArmCPPCompiler(ArmCompiler, CPPCompiler):
 
 
 class CcrxCPPCompiler(CcrxCompiler, CPPCompiler):
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo', exe_wrap=None, **kwargs):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               , exe_wrap=None, **kwargs):
         CPPCompiler.__init__(self, exelist, version, for_machine, is_cross,
                              info, exe_wrap, **kwargs)
         CcrxCompiler.__init__(self)

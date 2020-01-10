@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import configparser, os, subprocess
+import os
+import subprocess
 import typing as T
 
 from . import mesonlib
@@ -77,7 +78,7 @@ CPU_FAMILES_64_BIT = [
 
 class MesonConfigFile:
     @classmethod
-    def from_config_parser(cls, parser: configparser.ConfigParser) -> T.Dict[str, T.Dict[str, T.Dict[str, str]]]:
+    def from_config_parser(cls, parser                           )                                              :
         out = {}
         # This is a bit hackish at the moment.
         for s in parser.sections():
@@ -114,76 +115,76 @@ class HasEnvVarFallback:
     that we deal with environment variables will become more structured, and
     this can be starting point.
     """
-    def __init__(self, fallback: bool = True):
+    def __init__(self, fallback       = True):
         self.fallback = fallback
 
 class Properties(HasEnvVarFallback):
     def __init__(
             self,
-            properties: T.Optional[T.Dict[str, T.Union[str, T.List[str]]]] = None,
-            fallback: bool = True):
+            properties                                                     = None,
+            fallback       = True):
         super().__init__(fallback)
         self.properties = properties or {}  # type: T.Dict[str, T.Union[str, T.List[str]]]
 
-    def has_stdlib(self, language: str) -> bool:
+    def has_stdlib(self, language     )        :
         return language + '_stdlib' in self.properties
 
     # Some of get_stdlib, get_root, get_sys_root are wider than is actually
     # true, but without heterogenious dict annotations it's not practical to
     # narrow them
-    def get_stdlib(self, language: str) -> T.Union[str, T.List[str]]:
+    def get_stdlib(self, language     )                             :
         return self.properties[language + '_stdlib']
 
-    def get_root(self) -> T.Optional[T.Union[str, T.List[str]]]:
+    def get_root(self)                                         :
         return self.properties.get('root', None)
 
-    def get_sys_root(self) -> T.Optional[T.Union[str, T.List[str]]]:
+    def get_sys_root(self)                                         :
         return self.properties.get('sys_root', None)
 
-    def __eq__(self, other: T.Any) -> 'T.Union[bool, NotImplemented]':
+    def __eq__(self, other       )                                   :
         if isinstance(other, type(self)):
             return self.properties == other.properties
         return NotImplemented
 
     # TODO consider removing so Properties is less freeform
-    def __getitem__(self, key: str) -> T.Any:
+    def __getitem__(self, key     )         :
         return self.properties[key]
 
     # TODO consider removing so Properties is less freeform
-    def __contains__(self, item: T.Any) -> bool:
+    def __contains__(self, item       )        :
         return item in self.properties
 
     # TODO consider removing, for same reasons as above
-    def get(self, key: str, default: T.Any = None) -> T.Any:
+    def get(self, key     , default        = None)         :
         return self.properties.get(key, default)
 
 class MachineInfo:
-    def __init__(self, system: str, cpu_family: str, cpu: str, endian: str):
+    def __init__(self, system     , cpu_family     , cpu     , endian     ):
         self.system = system
         self.cpu_family = cpu_family
         self.cpu = cpu
         self.endian = endian
         self.is_64_bit = cpu_family in CPU_FAMILES_64_BIT  # type: bool
 
-    def __eq__(self, other: T.Any) -> 'T.Union[bool, NotImplemented]':
+    def __eq__(self, other       )                                   :
         if self.__class__ is not other.__class__:
             return NotImplemented
-        return \
-            self.system == other.system and \
-            self.cpu_family == other.cpu_family and \
-            self.cpu == other.cpu and \
+        return\
+            self.system == other.system and\
+            self.cpu_family == other.cpu_family and\
+            self.cpu == other.cpu and\
             self.endian == other.endian
 
-    def __ne__(self, other: T.Any) -> 'T.Union[bool, NotImplemented]':
+    def __ne__(self, other       )                                   :
         if self.__class__ is not other.__class__:
             return NotImplemented
         return not self.__eq__(other)
 
-    def __repr__(self) -> str:
+    def __repr__(self)       :
         return '<MachineInfo: {} {} ({})>'.format(self.system, self.cpu_family, self.cpu)
 
     @classmethod
-    def from_literal(cls, literal: T.Dict[str, str]) -> 'MachineInfo':
+    def from_literal(cls, literal                  )                 :
         minimum_literal = {'cpu', 'cpu_family', 'endian', 'system'}
         if set(literal) < minimum_literal:
             raise EnvironmentException(
@@ -200,89 +201,89 @@ class MachineInfo:
 
         return cls(literal['system'], cpu_family, literal['cpu'], endian)
 
-    def is_windows(self) -> bool:
+    def is_windows(self)        :
         """
         Machine is windows?
         """
         return self.system == 'windows' or 'mingw' in self.system
 
-    def is_cygwin(self) -> bool:
+    def is_cygwin(self)        :
         """
         Machine is cygwin?
         """
         return self.system.startswith('cygwin')
 
-    def is_linux(self) -> bool:
+    def is_linux(self)        :
         """
         Machine is linux?
         """
         return self.system == 'linux'
 
-    def is_darwin(self) -> bool:
+    def is_darwin(self)        :
         """
         Machine is Darwin (iOS/tvOS/OS X)?
         """
         return self.system in {'darwin', 'ios', 'tvos'}
 
-    def is_android(self) -> bool:
+    def is_android(self)        :
         """
         Machine is Android?
         """
         return self.system == 'android'
 
-    def is_haiku(self) -> bool:
+    def is_haiku(self)        :
         """
         Machine is Haiku?
         """
         return self.system == 'haiku'
 
-    def is_netbsd(self) -> bool:
+    def is_netbsd(self)        :
         """
         Machine is NetBSD?
         """
         return self.system == 'netbsd'
 
-    def is_openbsd(self) -> bool:
+    def is_openbsd(self)        :
         """
         Machine is OpenBSD?
         """
         return self.system == 'openbsd'
 
-    def is_dragonflybsd(self) -> bool:
+    def is_dragonflybsd(self)        :
         """Machine is DragonflyBSD?"""
         return self.system == 'dragonfly'
 
-    def is_freebsd(self) -> bool:
+    def is_freebsd(self)        :
         """Machine is FreeBSD?"""
         return self.system == 'freebsd'
 
-    def is_sunos(self) -> bool:
+    def is_sunos(self)        :
         """Machine is illumos or Solaris?"""
         return self.system == 'sunos'
 
     # Various prefixes and suffixes for import libraries, shared libraries,
     # static libraries, and executables.
     # Versioning is added to these names in the backends as-needed.
-    def get_exe_suffix(self) -> str:
+    def get_exe_suffix(self)       :
         if self.is_windows() or self.is_cygwin():
             return 'exe'
         else:
             return ''
 
-    def get_object_suffix(self) -> str:
+    def get_object_suffix(self)       :
         if self.is_windows():
             return 'obj'
         else:
             return 'o'
 
-    def libdir_layout_is_win(self) -> bool:
+    def libdir_layout_is_win(self)        :
         return self.is_windows() or self.is_cygwin()
 
 class BinaryTable(HasEnvVarFallback):
     def __init__(
             self,
-            binaries: T.Optional[T.Dict[str, T.Union[str, T.List[str]]]] = None,
-            fallback: bool = True):
+            binaries                                                     = None,
+            fallback       = True):
         super().__init__(fallback)
         self.binaries = binaries or {}  # type: T.Dict[str, T.Union[str, T.List[str]]]
         for name, command in self.binaries.items():
@@ -318,7 +319,7 @@ class BinaryTable(HasEnvVarFallback):
     }  # type: T.Dict[str, str]
 
     @staticmethod
-    def detect_ccache() -> T.List[str]:
+    def detect_ccache()               :
         try:
             subprocess.check_call(['ccache', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except (OSError, subprocess.CalledProcessError):
@@ -326,14 +327,14 @@ class BinaryTable(HasEnvVarFallback):
         return ['ccache']
 
     @classmethod
-    def _warn_about_lang_pointing_to_cross(cls, compiler_exe: str, evar: str) -> None:
+    def _warn_about_lang_pointing_to_cross(cls, compiler_exe     , evar     )        :
         evar_str = os.environ.get(evar, 'WHO_WOULD_CALL_THEIR_COMPILER_WITH_THIS_NAME')
         if evar_str == compiler_exe:
             mlog.warning('''Env var %s seems to point to the cross compiler.
 This is probably wrong, it should always point to the native compiler.''' % evar)
 
     @classmethod
-    def parse_entry(cls, entry: T.Union[str, T.List[str]]) -> T.Tuple[T.List[str], T.List[str]]:
+    def parse_entry(cls, entry                           )                                     :
         compiler = mesonlib.stringlistify(entry)
         # Ensure ccache exists and remove it if it doesn't
         if compiler[0] == 'ccache':
@@ -344,7 +345,7 @@ This is probably wrong, it should always point to the native compiler.''' % evar
         # Return value has to be a list of compiler 'choices'
         return compiler, ccache
 
-    def lookup_entry(self, name: str) -> T.Optional[T.List[str]]:
+    def lookup_entry(self, name     )                           :
         """Lookup binaryk
 
         Returns command with args as list if found, Returns `None` if nothing is
@@ -377,13 +378,13 @@ class Directories:
     builds.
     """
 
-    def __init__(self, bindir: T.Optional[str] = None, datadir: T.Optional[str] = None,
-                 includedir: T.Optional[str] = None, infodir: T.Optional[str] = None,
-                 libdir: T.Optional[str] = None, libexecdir: T.Optional[str] = None,
-                 localedir: T.Optional[str] = None, localstatedir: T.Optional[str] = None,
-                 mandir: T.Optional[str] = None, prefix: T.Optional[str] = None,
-                 sbindir: T.Optional[str] = None, sharedstatedir: T.Optional[str] = None,
-                 sysconfdir: T.Optional[str] = None):
+    def __init__(self, bindir                  = None, datadir                  = None,
+                 includedir                  = None, infodir                  = None,
+                 libdir                  = None, libexecdir                  = None,
+                 localedir                  = None, localstatedir                  = None,
+                 mandir                  = None, prefix                  = None,
+                 sbindir                  = None, sharedstatedir                  = None,
+                 sysconfdir                  = None):
         self.bindir = bindir
         self.datadir = datadir
         self.includedir = includedir
@@ -398,15 +399,15 @@ class Directories:
         self.sharedstatedir = sharedstatedir
         self.sysconfdir = sysconfdir
 
-    def __contains__(self, key: str) -> bool:
+    def __contains__(self, key     )        :
         return hasattr(self, key)
 
-    def __getitem__(self, key: str) -> T.Optional[str]:
+    def __getitem__(self, key     )                   :
         # Mypy can't figure out what to do with getattr here, so we'll case for it
         return T.cast(T.Optional[str], getattr(self, key))
 
-    def __setitem__(self, key: str, value: T.Optional[str]) -> None:
+    def __setitem__(self, key     , value                 )        :
         setattr(self, key, value)
 
-    def __iter__(self) -> T.Iterator[T.Tuple[str, str]]:
+    def __iter__(self)                                 :
         return iter(self.__dict__.items())

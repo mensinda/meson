@@ -17,13 +17,12 @@
 
 from ..mesonlib import MesonException
 from .. import mlog
-import typing as T
 
 class CMakeException(MesonException):
     pass
 
 class CMakeBuildFile:
-    def __init__(self, file: str, is_cmake: bool, is_temp: bool):
+    def __init__(self, file     , is_cmake      , is_temp      ):
         self.file = file
         self.is_cmake = is_cmake
         self.is_temp = is_temp
@@ -31,7 +30,7 @@ class CMakeBuildFile:
     def __repr__(self):
         return '<{}: {}; cmake={}; temp={}>'.format(self.__class__.__name__, self.file, self.is_cmake, self.is_temp)
 
-def _flags_to_list(raw: str) -> T.List[str]:
+def _flags_to_list(raw     )               :
     # Convert a raw commandline string into a list of strings
     res = []
     curr = ''
@@ -61,7 +60,7 @@ def _flags_to_list(raw: str) -> T.List[str]:
     return res
 
 class CMakeFileGroup:
-    def __init__(self, data: dict):
+    def __init__(self, data      ):
         self.defines = data.get('defines', '')
         self.flags = _flags_to_list(data.get('compileFlags', ''))
         self.includes = data.get('includePath', [])
@@ -79,7 +78,7 @@ class CMakeFileGroup:
                 tmp += [{'path': i, 'isSystem': False}]
         self.includes = tmp
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.log('flags        =', mlog.bold(', '.join(self.flags)))
         mlog.log('defines      =', mlog.bold(', '.join(self.defines)))
         mlog.log('includes     =', mlog.bold(', '.join(self.includes)))
@@ -91,7 +90,7 @@ class CMakeFileGroup:
                 mlog.log(i)
 
 class CMakeTarget:
-    def __init__(self, data: dict):
+    def __init__(self, data      ):
         self.artifacts = data.get('artifacts', [])
         self.src_dir = data.get('sourceDirectory', '')
         self.build_dir = data.get('buildDirectory', '')
@@ -111,7 +110,7 @@ class CMakeTarget:
         for i in data.get('fileGroups', []):
             self.files += [CMakeFileGroup(i)]
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.log('artifacts             =', mlog.bold(', '.join(self.artifacts)))
         mlog.log('src_dir               =', mlog.bold(self.src_dir))
         mlog.log('build_dir             =', mlog.bold(self.build_dir))
@@ -132,7 +131,7 @@ class CMakeTarget:
                 i.log()
 
 class CMakeProject:
-    def __init__(self, data: dict):
+    def __init__(self, data      ):
         self.src_dir = data.get('sourceDirectory', '')
         self.build_dir = data.get('buildDirectory', '')
         self.name = data.get('name', '')
@@ -141,7 +140,7 @@ class CMakeProject:
         for i in data.get('targets', []):
             self.targets += [CMakeTarget(i)]
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.log('src_dir   =', mlog.bold(self.src_dir))
         mlog.log('build_dir =', mlog.bold(self.build_dir))
         mlog.log('name      =', mlog.bold(self.name))
@@ -151,13 +150,13 @@ class CMakeProject:
                 i.log()
 
 class CMakeConfiguration:
-    def __init__(self, data: dict):
+    def __init__(self, data      ):
         self.name = data.get('name', '')
         self.projects = []
         for i in data.get('projects', []):
             self.projects += [CMakeProject(i)]
 
-    def log(self) -> None:
+    def log(self)        :
         mlog.log('name =', mlog.bold(self.name))
         for idx, i in enumerate(self.projects):
             mlog.log('Project {}:'.format(idx))

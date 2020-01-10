@@ -25,7 +25,7 @@ from pathlib import Path
 information about Meson runs. Some output goes to screen,
 some to logging dir and some goes to both."""
 
-def _windows_ansi() -> bool:
+def _windows_ansi()        :
     # windll only exists on windows, so mypy will get mad
     from ctypes import windll, byref  # type: ignore
     from ctypes.wintypes import DWORD
@@ -58,33 +58,33 @@ log_errors_only = False      # type: bool
 _in_ci = 'CI' in os.environ  # type: bool
 _logged_once = set()         # type: T.Set[T.Tuple[str, ...]]
 
-def disable() -> None:
+def disable()        :
     global log_disable_stdout
     log_disable_stdout = True
 
-def enable() -> None:
+def enable()        :
     global log_disable_stdout
     log_disable_stdout = False
 
-def set_quiet() -> None:
+def set_quiet()        :
     global log_errors_only
     log_errors_only = True
 
-def set_verbose() -> None:
+def set_verbose()        :
     global log_errors_only
     log_errors_only = False
 
-def initialize(logdir: str, fatal_warnings: bool = False) -> None:
+def initialize(logdir     , fatal_warnings       = False)        :
     global log_dir, log_file, log_fatal_warnings
     log_dir = logdir
     log_file = open(os.path.join(logdir, log_fname), 'w', encoding='utf8')
     log_fatal_warnings = fatal_warnings
 
-def set_timestamp_start(start: float) -> None:
+def set_timestamp_start(start       )        :
     global log_timestamp_start
     log_timestamp_start = start
 
-def shutdown() -> T.Optional[str]:
+def shutdown()                   :
     global log_file
     if log_file is not None:
         path = log_file.name
@@ -97,12 +97,12 @@ def shutdown() -> T.Optional[str]:
 class AnsiDecorator:
     plain_code = "\033[0m"
 
-    def __init__(self, text: str, code: str, quoted: bool = False):
+    def __init__(self, text     , code     , quoted       = False):
         self.text = text
         self.code = code
         self.quoted = quoted
 
-    def get_text(self, with_codes: bool) -> str:
+    def get_text(self, with_codes      )       :
         text = self.text
         if with_codes:
             text = self.code + self.text + AnsiDecorator.plain_code
@@ -110,42 +110,42 @@ class AnsiDecorator:
             text = '"{}"'.format(text)
         return text
 
-def bold(text: str, quoted: bool = False) -> AnsiDecorator:
+def bold(text     , quoted       = False)                 :
     return AnsiDecorator(text, "\033[1m", quoted=quoted)
 
-def red(text: str) -> AnsiDecorator:
+def red(text     )                 :
     return AnsiDecorator(text, "\033[1;31m")
 
-def green(text: str) -> AnsiDecorator:
+def green(text     )                 :
     return AnsiDecorator(text, "\033[1;32m")
 
-def yellow(text: str) -> AnsiDecorator:
+def yellow(text     )                 :
     return AnsiDecorator(text, "\033[1;33m")
 
-def blue(text: str) -> AnsiDecorator:
+def blue(text     )                 :
     return AnsiDecorator(text, "\033[1;34m")
 
-def cyan(text: str) -> AnsiDecorator:
+def cyan(text     )                 :
     return AnsiDecorator(text, "\033[1;36m")
 
-def normal_red(text: str) -> AnsiDecorator:
+def normal_red(text     )                 :
     return AnsiDecorator(text, "\033[31m")
 
-def normal_green(text: str) -> AnsiDecorator:
+def normal_green(text     )                 :
     return AnsiDecorator(text, "\033[32m")
 
-def normal_yellow(text: str) -> AnsiDecorator:
+def normal_yellow(text     )                 :
     return AnsiDecorator(text, "\033[33m")
 
-def normal_blue(text: str) -> AnsiDecorator:
+def normal_blue(text     )                 :
     return AnsiDecorator(text, "\033[34m")
 
-def normal_cyan(text: str) -> AnsiDecorator:
+def normal_cyan(text     )                 :
     return AnsiDecorator(text, "\033[36m")
 
 # This really should be AnsiDecorator or anything that implements
 # __str__(), but that requires protocols from typing_extensions
-def process_markup(args: T.Sequence[T.Union[AnsiDecorator, str]], keep: bool) -> T.List[str]:
+def process_markup(args                                         , keep      )               :
     arr = []  # type: T.List[str]
     if log_timestamp_start is not None:
         arr = ['[{:.3f}]'.format(time.monotonic() - log_timestamp_start)]
@@ -160,7 +160,7 @@ def process_markup(args: T.Sequence[T.Union[AnsiDecorator, str]], keep: bool) ->
             arr.append(str(arg))
     return arr
 
-def force_print(*args: str, **kwargs: T.Any) -> None:
+def force_print(*args     , **kwargs       )        :
     if log_disable_stdout:
         return
     iostr = io.StringIO()
@@ -180,23 +180,23 @@ def force_print(*args: str, **kwargs: T.Any) -> None:
         print(cleaned, end='')
 
 # We really want a heterogeneous dict for this, but that's in typing_extensions
-def debug(*args: T.Union[str, AnsiDecorator], **kwargs: T.Any) -> None:
+def debug(*args                             , **kwargs       )        :
     arr = process_markup(args, False)
     if log_file is not None:
         print(*arr, file=log_file, **kwargs)
         log_file.flush()
 
-def _debug_log_cmd(cmd: str, args: T.List[str]) -> None:
+def _debug_log_cmd(cmd     , args             )        :
     if not _in_ci:
         return
     args = ['"{}"'.format(x) for x in args]  # Quote all args, just in case
     debug('!meson_ci!/{} {}'.format(cmd, ' '.join(args)))
 
-def cmd_ci_include(file: str) -> None:
+def cmd_ci_include(file     )        :
     _debug_log_cmd('ci_include', [file])
 
-def log(*args: T.Union[str, AnsiDecorator], is_error: bool = False,
-        **kwargs: T.Any) -> None:
+def log(*args                             , is_error       = False,
+        **kwargs       )        :
     arr = process_markup(args, False)
     if log_file is not None:
         print(*arr, file=log_file, **kwargs)
@@ -206,8 +206,8 @@ def log(*args: T.Union[str, AnsiDecorator], is_error: bool = False,
     if not log_errors_only or is_error:
         force_print(*arr, **kwargs)
 
-def log_once(*args: T.Union[str, AnsiDecorator], is_error: bool = False,
-             **kwargs: T.Any) -> None:
+def log_once(*args                             , is_error       = False,
+             **kwargs       )        :
     """Log variant that only prints a given message one time per meson invocation.
 
     This considers nasi decorated values by the values they wrap without
@@ -219,8 +219,8 @@ def log_once(*args: T.Union[str, AnsiDecorator], is_error: bool = False,
     _logged_once.add(t)
     log(*args, is_error=is_error, **kwargs)
 
-def _log_error(severity: str, *rargs: T.Union[str, AnsiDecorator],
-               once: bool = False, **kwargs: T.Any) -> None:
+def _log_error(severity     , *rargs                             ,
+               once       = False, **kwargs       )        :
     from .mesonlib import get_error_location_string
     from .environment import build_filename
     from .mesonlib import MesonException
@@ -255,16 +255,16 @@ def _log_error(severity: str, *rargs: T.Union[str, AnsiDecorator],
     if log_fatal_warnings:
         raise MesonException("Fatal warnings enabled, aborting")
 
-def error(*args: T.Union[str, AnsiDecorator], once: bool = False, **kwargs: T.Any) -> None:
+def error(*args                             , once       = False, **kwargs       )        :
     return _log_error('error', *args, **kwargs, is_error=True, once=once)
 
-def warning(*args: T.Union[str, AnsiDecorator], once: bool = False, **kwargs: T.Any) -> None:
+def warning(*args                             , once       = False, **kwargs       )        :
     return _log_error('warning', *args, **kwargs, is_error=True, once=once)
 
-def deprecation(*args: T.Union[str, AnsiDecorator], once: bool = False, **kwargs: T.Any) -> None:
+def deprecation(*args                             , once       = False, **kwargs       )        :
     return _log_error('deprecation', *args, **kwargs, is_error=True, once=once)
 
-def get_relative_path(target: Path, current: Path) -> Path:
+def get_relative_path(target      , current      )        :
     """Get the path to target from current"""
     # Go up "current" until we find a common ancestor to target
     acc = ['.']
@@ -279,7 +279,7 @@ def get_relative_path(target: Path, current: Path) -> Path:
     # we failed, should not get here
     return target
 
-def exception(e: Exception, prefix: T.Optional[AnsiDecorator] = None) -> None:
+def exception(e           , prefix                            = None)        :
     if prefix is None:
         prefix = red('ERROR:')
     log()
@@ -296,7 +296,7 @@ def exception(e: Exception, prefix: T.Optional[AnsiDecorator] = None) -> None:
 
 # Format a list for logging purposes as a string. It separates
 # all but the last item with commas, and the last with 'and'.
-def format_list(input_list: T.List[str]) -> str:
+def format_list(input_list             )       :
     l = len(input_list)
     if l > 2:
         return ' and '.join([', '.join(input_list[:-1]), input_list[-1]])
@@ -308,7 +308,7 @@ def format_list(input_list: T.List[str]) -> str:
         return ''
 
 @contextmanager
-def nested() -> T.Generator[None, None, None]:
+def nested()                                 :
     global log_depth
     log_depth += 1
     try:

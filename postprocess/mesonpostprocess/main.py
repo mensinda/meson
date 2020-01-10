@@ -26,7 +26,6 @@ from pathlib import Path
 import argparse
 import os
 import shutil
-import typing as T
 
 SKIP_DIRS = [
     '__pycache__',
@@ -41,7 +40,7 @@ SKIP_DIRS = [
     'install dir'
 ]
 
-def main() -> int:
+def main()       :
     parser = argparse.ArgumentParser('Meson code post-processor')
     parser.add_argument('--hints', '-H', action='store_true', help='Removes type hints')
     parser.add_argument('--imports', '-i', action='store_true', help='Remove unused imports')
@@ -52,15 +51,15 @@ def main() -> int:
     parser.add_argument('out', metavar='DIR', type=str, help='Output directory for the converted files')
     args = parser.parse_args()
 
-    actions: T.List[PostProcessBase] = []
-    sources: T.List[T.Tuple[Path, Path]] = []
+    actions                          = []
+    sources                              = []
     ncopied = 0
-    missing_imports: T.List[T.Tuple[str, str]] = []
+    missing_imports                            = []
 
-    def add_action(a: PostProcessBase) -> None:
+    def add_action(a                 )        :
         nonlocal actions, missing_imports
         if not a.check():
-            print(f'ERROR: Failed to load the {a.name} postprocessor')
+            print('ERROR: Failed to load the {} postprocessor'.format(a.name))
             missing_imports += a.imports
         actions += [a]
 
@@ -81,24 +80,24 @@ def main() -> int:
         print('')
         print('Failed to import the following modules:')
         for i in missing_imports:
-            print(f'  - {i[0]:<12} url: {i[1]}')
+            print('  - {:<12} url: {}'.format(i[0], i[1]))
         print('')
-        print(f'Try: pip install {" ".join([x[0] for x in missing_imports])}')
+        print('Try: pip install {}'.format(" ".join([x[0] for x in missing_imports])))
         return 2
 
     meson_root = Path(__file__).parent.parent.parent.absolute()
     outdir = Path(args.out).absolute()
     if outdir.exists():
-        print(f'ERROR: {outdir} already exists.')
+        print('ERROR: {} already exists.'.format(outdir))
         return 1
 
-    print(f'Output will be written to {outdir}')
-    print(f'Scanning files in {meson_root} ...')
+    print('Output will be written to {}'.format(outdir))
+    print('Scanning files in {} ...'.format(meson_root))
 
     # Start by scanning the meson root
     for root, _, files in os.walk(meson_root):
         r_posix = Path(root).as_posix()
-        if any({r_posix.endswith(f'/{x}') or f'/{x}/' in r_posix for x in SKIP_DIRS}):
+        if any({r_posix.endswith('/{}'.format(x)) or '/{}/'.format(x) in r_posix for x in SKIP_DIRS}):
             continue
 
         for f in files:
@@ -115,7 +114,7 @@ def main() -> int:
             else:
                 # Copy none python files
                 if args.verbose >= 2:
-                    print(f'  -- Copying {src.relative_to(meson_root)}')
+                    print('  -- Copying {}'.format(src.relative_to(meson_root)))
 
                 shutil.copy2(src, dst)
                 ncopied += 1
@@ -125,7 +124,7 @@ def main() -> int:
 
     try:
         from tqdm import tqdm  # type: ignore
-        src_iter: T.Iterable[T.Tuple[Path, Path]] = tqdm(sources, unit='files', leave=False)
+        src_iter                                  = tqdm(sources, unit='files', leave=False)
     except ImportError:
         print('WARNING: Failed to import tqdm! ==> No progress bar.')
         src_iter = sources
@@ -134,7 +133,7 @@ def main() -> int:
         raw = src.read_text()
 
         if args.verbose >= 1:
-            print(f'  -- Processing {src.relative_to(meson_root)}')
+            print('  -- Processing {}'.format(src.relative_to(meson_root)))
 
         # Skip empty files
         if not raw:
@@ -144,15 +143,15 @@ def main() -> int:
         for a in actions:
             new_str = a.apply(raw)
             if not new_str:
-                print(f'ERROR: applying {a.name} returned an empty string for {src.relative_to(meson_root)}')
+                print('ERROR: applying {} returned an empty string for {}'.format(a.name, src.relative_to(meson_root)))
                 continue
             raw = new_str
 
         dst.write_text(raw)
         dst.chmod(src.stat().st_mode)
 
-    print(f'Done. Statistics:')
-    print(f'  -- files processed: {len(sources)}')
-    print(f'  -- files copied:    {ncopied}')
-    print(f'  -- actions applied: {len(actions)}')
+    print('Done. Statistics:')
+    print('  -- files processed: {}'.format(len(sources)))
+    print('  -- files copied:    {}'.format(ncopied))
+    print('  -- actions applied: {}'.format(len(actions)))
     return 0

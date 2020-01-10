@@ -21,14 +21,14 @@ class TypeHintsRemover(PostProcessBase):
     def __init__(self):
         super().__init__('strip-hints', [('strip-hints', 'https://pypi.org/project/strip-hints')])
 
-    def check(self) -> bool:
+    def check(self)        :
         try:
             import strip_hints  # type: ignore # noqa
         except ImportError:
             return False
         return True
 
-    def apply(self, raw: str) -> str:
+    def apply(self, raw     )       :
         import strip_hints  # type: ignore
         with tempfile.NamedTemporaryFile(mode='w', prefix='meson_strip_hints_', suffix='.py') as fp:
             fp.write(raw)

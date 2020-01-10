@@ -16,19 +16,19 @@ import os.path
 import typing as T
 
 from .. import mlog
-from ..mesonlib import EnvironmentException, MachineChoice, version_compare
+from ..mesonlib import EnvironmentException, version_compare
 
 from .compilers import Compiler
 
 if T.TYPE_CHECKING:
-    from ..envconfig import MachineInfo
+    pass
 
 class ValaCompiler(Compiler):
 
     language = 'vala'
 
-    def __init__(self, exelist, version, for_machine: MachineChoice,
-                 is_cross, info: 'MachineInfo'):
+    def __init__(self, exelist, version, for_machine               ,
+                 is_cross, info               ):
         super().__init__(exelist, version, for_machine, info)
         self.version = version
         self.is_cross = is_cross
@@ -101,7 +101,7 @@ class ValaCompiler(Compiler):
             extra_flags += environment.coredata.get_external_link_args(self.for_machine, self.language)
         with self.cached_compile(code, environment.coredata, extra_args=extra_flags, mode='compile') as p:
             if p.returncode != 0:
-                msg = 'Vala compiler {!r} can not compile programs' \
+                msg = 'Vala compiler {!r} can not compile programs'\
                       ''.format(self.name_string())
                 raise EnvironmentException(msg)
 

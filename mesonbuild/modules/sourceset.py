@@ -113,7 +113,7 @@ class SourceSetHolder(MutableInterpreterObject, ObjectHolder):
         if not into:
             into = SourceFiles(set(), set())
         for entry in self.held_object:
-            if all(x.found() for x in entry.dependencies) and \
+            if all(x.found() for x in entry.dependencies) and\
                all(enabled_fn(key) for key in entry.keys):
                 into.sources.update(entry.sources)
                 into.dependencies.update(entry.dependencies)

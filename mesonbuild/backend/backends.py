@@ -27,7 +27,6 @@ from ..compilers import CompilerArgs, VisualStudioLikeCompiler
 from collections import OrderedDict
 import shlex
 from functools import lru_cache
-import typing as T
 
 
 class CleanTrees:
@@ -81,12 +80,12 @@ class ExecutableSerialisation:
         self.capture = capture
 
 class TestSerialisation:
-    def __init__(self, name: str, project: str, suite: str, fname: T.List[str],
-                 is_cross_built: bool, exe_wrapper: T.Optional[build.Executable],
-                 needs_exe_wrapper: bool, is_parallel: bool, cmd_args: T.List[str],
-                 env: build.EnvironmentVariables, should_fail: bool,
-                 timeout: T.Optional[int], workdir: T.Optional[str],
-                 extra_paths: T.List[str], protocol: str, priority: int):
+    def __init__(self, name     , project     , suite     , fname             ,
+                 is_cross_built      , exe_wrapper                              ,
+                 needs_exe_wrapper      , is_parallel      , cmd_args             ,
+                 env                            , should_fail      ,
+                 timeout                 , workdir                 ,
+                 extra_paths             , protocol     , priority     ):
         self.name = name
         self.project_name = project
         self.suite = suite
@@ -328,8 +327,8 @@ class Backend:
         if is_cross_built and self.environment.need_exe_wrapper():
             exe_wrapper = self.environment.get_exe_wrapper()
             if not exe_wrapper.found():
-                msg = 'The exe_wrapper {!r} defined in the cross file is ' \
-                      'needed by target {!r}, but was not found. Please ' \
+                msg = 'The exe_wrapper {!r} defined in the cross file is '\
+                      'needed by target {!r}, but was not found. Please '\
                       'check the command and/or add it to PATH.'
                 raise MesonException(msg.format(exe_wrapper.name, tname))
         else:
@@ -339,7 +338,7 @@ class Backend:
                 exe_cmd = ['mono'] + exe_cmd
             exe_wrapper = None
 
-        force_serialize = force_serialize or extra_paths or workdir or \
+        force_serialize = force_serialize or extra_paths or workdir or\
             exe_wrapper or any('\n' in c for c in cmd_args)
         if not force_serialize:
             if not capture:
@@ -676,7 +675,7 @@ class Backend:
                 paths.update(cc.get_library_dirs(self.environment))
         return list(paths)
 
-    def determine_windows_extra_paths(self, target: T.Union[build.BuildTarget, str], extra_bdeps):
+    def determine_windows_extra_paths(self, target                                 , extra_bdeps):
         '''On Windows there is no such thing as an rpath.
         We must determine all locations of DLLs that this exe
         links to and return them so they can be used in unit
@@ -967,7 +966,7 @@ class Backend:
                 i = i.replace('@BUILD_ROOT@', build_root)
             elif '@DEPFILE@' in i:
                 if target.depfile is None:
-                    msg = 'Custom target {!r} has @DEPFILE@ but no depfile ' \
+                    msg = 'Custom target {!r} has @DEPFILE@ but no depfile '\
                           'keyword argument.'.format(target.name)
                     raise MesonException(msg)
                 dfilename = os.path.join(outdir, target.depfile)
@@ -981,7 +980,7 @@ class Backend:
             elif '@PRIVATE_OUTDIR_' in i:
                 match = re.search(r'@PRIVATE_OUTDIR_(ABS_)?([^/\s*]*)@', i)
                 if not match:
-                    msg = 'Custom target {!r} has an invalid argument {!r}' \
+                    msg = 'Custom target {!r} has an invalid argument {!r}'\
                           ''.format(target.name, i)
                     raise MesonException(msg)
                 source = match.group(0)
@@ -1063,8 +1062,8 @@ class Backend:
             # Sanity-check the outputs and install_dirs
             num_outdirs, num_out = len(outdirs), len(t.get_outputs())
             if num_outdirs != 1 and num_outdirs != num_out:
-                m = 'Target {!r} has {} outputs: {!r}, but only {} "install_dir"s were found.\n' \
-                    "Pass 'false' for outputs that should not be installed and 'true' for\n" \
+                m = 'Target {!r} has {} outputs: {!r}, but only {} "install_dir"s were found.\n'\
+                    "Pass 'false' for outputs that should not be installed and 'true' for\n"\
                     'using the default installation directory for an output.'
                 raise MesonException(m.format(t.name, num_out, t.get_outputs(), num_outdirs))
             install_mode = t.get_custom_install_mode()
