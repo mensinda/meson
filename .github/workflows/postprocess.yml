@@ -24,7 +24,7 @@ jobs:
       - name: Installing dependencies
         run: python -m pip install strip-hints f2format autoflake autopep8
       - name: Transpiling
-        run: python postprocess -aV $OUT_DIR
+        run: python postprocess -V --hints --imports --fstrings $OUT_DIR
       - name: Move files
         run: |
           find . -maxdepth 1 ! -name . ! -name $OUT_DIR ! -name .git -exec rm -rf {} \;
