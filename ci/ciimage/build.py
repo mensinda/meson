@@ -6,6 +6,7 @@ import stat
 import textwrap
 import shutil
 import subprocess
+import re
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import typing as T
@@ -14,6 +15,17 @@ image_namespace = 'mesonbuild'
 
 image_def_file = 'image.json'
 install_script = 'install.sh'
+
+class Stage:
+    def __init__(self, raw: T.Dict[str, T.Any]) -> None:
+        assert all([x in raw for x in ['image', 'as', 'cmds']])
+        assert isinstance(raw['image'], str)
+        assert isinstance(raw['as'], str)
+        assert isinstance(raw['cmds'], list)
+
+        self.image: str = raw['image']
+        self.alias: str = raw['as']
+        self.cmds: T.List[str] = raw['cmds']
 
 class ImageDef:
     def __init__(self, image_dir: Path) -> None:
@@ -25,9 +37,18 @@ class ImageDef:
         assert isinstance(data['base_image'], str)
         assert isinstance(data['env'],  dict)
 
+        stages: T.List[Stage] = []
+        if 'stages' in data:
+            assert isinstance(data['stages'], list)
+            for i in data['stages']:
+                assert isinstance(i, dict)
+                stages += [Stage(i)]
+
         self.base_image: str = data['base_image']
         self.args: T.List[str] = data.get('args', [])
+        self.cmds: T.List[str] = data.get('cmds', [])
         self.env: T.Dict[str, str] = data['env']
+        self.stages: T.List[Stage] = stages
 
 class BuilderBase():
     def __init__(self, data_dir: Path, temp_dir: Path) -> None:
@@ -82,15 +103,39 @@ class Builder(BuilderBase):
 
     def gen_dockerfile(self) -> None:
         out_file = self.temp_dir / 'Dockerfile'
-        out_data = textwrap.dedent(f'''\
+        stages: T.List[str] = []
+        nl = '\n'
+
+        counter = 1
+        for i in self.image_def.stages:
+            stages += [f'''\
+                # BEGIN stage {counter}
+                FROM {i.image} as {i.alias}
+
+                # Stage {counter} commands
+                {nl.join(i.cmds)}
+
+                # END stage {counter}
+            ''']
+            counter += 1
+
+        out_data = f'''\
+            {nl.join(stages)}
+
+            # Main stage
             FROM {self.image_def.base_image}
 
+            # Custom setup
+            {nl.join(self.image_def.cmds)}
+
+            # Common setup
             ADD install.sh  /ci/install.sh
             ADD common.sh   /ci/common.sh
             ADD env_vars.sh /ci/env_vars.sh
             RUN /ci/install.sh
-        ''')
+        '''
 
+        out_data = re.sub(r'^[ \t]*', '', out_data, flags=re.MULTILINE)
         out_file.write_text(out_data)
 
     def do_build(self) -> None:
