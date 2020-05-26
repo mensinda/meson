@@ -46,7 +46,8 @@ popd
 rm -rf /home/$AUR_USER/yay
 
 # Install yay deps
-su $AUR_USER -c "yay -S $PACMAN_OPTS ${aur_pkgs[*]}"
+# FFLAGS are required for scalapack https://github.com/Reference-ScaLAPACK/scalapack/issues/21
+su $AUR_USER -c "FFLAGS='-fallow-argument-mismatch' yay -S $PACMAN_OPTS ${aur_pkgs[*]}"
 
 # cleanup
 pacman -Rs --noconfirm "${cleanup_pkgs[@]}"
