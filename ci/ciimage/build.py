@@ -92,8 +92,8 @@ class Builder(BuilderBase):
         for key, val in self.image_def.env.items():
             out_data += f'export {key}="{val}"\n'
 
-        # Also add /ci to PATH
-        out_data += 'export PATH="/ci:$PATH"\n'
+        # Also add /ci and /root/.local/bin to PATH
+        out_data += 'export PATH="/ci:/root/.local/bin:$PATH"\n'
 
         out_file.write_text(out_data)
 
@@ -132,13 +132,12 @@ class Builder(BuilderBase):
             ADD install.sh  /ci/install.sh
             ADD common.sh   /ci/common.sh
             ADD env_vars.sh /ci/env_vars.sh
-            RUN /ci/install.sh
         '''
 
         out_data = re.sub(r'^[ \t]*', '', out_data, flags=re.MULTILINE)
         out_file.write_text(out_data)
 
-    def do_build(self) -> None:
+    def do_build(self, tty: bool) -> None:
         # copy files
         for i in self.data_dir.iterdir():
             shutil.copy(str(i), str(self.temp_dir))
@@ -153,15 +152,42 @@ class Builder(BuilderBase):
             raise RuntimeError('Failed to get the current commit hash')
         commit_hash = res.stdout.decode().strip()
 
-        cmd = [
-            self.docker, 'build',
-            '-t', f'{image_namespace}/{self.data_dir.name}:latest',
-            '-t', f'{image_namespace}/{self.data_dir.name}:{commit_hash}',
-            '--pull',
-            self.temp_dir.as_posix(),
+        image = f'{image_namespace}/{self.data_dir.name}'
+
+        cmd_build = [self.docker, 'build', '-t', 'meson_image', '--pull', self.temp_dir.as_posix()]
+
+        cmd_install = [
+            self.docker, 'run',
+            '--name', 'meson_container',
+            '-it' if tty else None,
+            '--cap-add=SYS_PTRACE',
+            'meson_image',
+            '/ci/install.sh',
         ]
-        if subprocess.run(cmd).returncode != 0:
-            raise RuntimeError('Failed to build the docker image')
+
+        cmd_install = [x for x in cmd_install if x]
+
+        cmd_commit = [self.docker, 'commit', 'meson_container', f'{image}:latest']
+        cmd_tag = [self.docker, 'tag', f'{image}:latest', f'{image}:{commit_hash}']
+        cmd_rm = [self.docker, 'rm', 'meson_container']
+        cmd_rmi = [self.docker, 'rmi', 'meson_image']
+
+        commands = [
+            ('build base image', cmd_build),
+            ('run the install script', cmd_install),
+            ('commit the install container', cmd_commit),
+            ('add commit tag', cmd_tag),
+            ('remove install container', cmd_rm),
+            ('remove base image', cmd_rmi),
+        ]
+
+        for i in commands:
+            print('\n')
+            print(f' ==> Docker build stage {i[0]}')
+            print(f'   -- {" ".join(i[1])}')
+            print('\n')
+            if subprocess.run(i[1]).returncode != 0:
+                raise RuntimeError(f'Failed to build the docker image during step {i[0]}')
 
 class ImageTester(BuilderBase):
     def __init__(self, data_dir: Path, temp_dir: Path, ci_root: Path) -> None:
@@ -216,7 +242,8 @@ class ImageTester(BuilderBase):
 def main() -> None:
     parser = argparse.ArgumentParser(description='Meson CI image builder')
     parser.add_argument('what', type=str, help='Which image to build / test')
-    parser.add_argument('-t', '--type', choices=['build', 'test'], help='What to do', required=True)
+    parser.add_argument('-T', action='store_true', dest='tty', help='Use docker run with -it')
+    parser.add_argument('-t', '--type', choices=['build', 'test', 'clean'], help='What to do', required=True)
 
     args = parser.parse_args()
 
@@ -229,10 +256,14 @@ def main() -> None:
 
         if args.type == 'build':
             builder = Builder(ci_data, ci_build)
-            builder.do_build()
+            builder.do_build(args.tty)
         elif args.type == 'test':
             tester = ImageTester(ci_data, ci_build, ci_root)
             tester.do_test()
+        elif args.type == 'clean':
+            subprocess.run(['docker', 'kill', 'meson_container'])
+            subprocess.run(['docker', 'rm', 'meson_container'])
+            subprocess.run(['docker', 'rmi', 'meson_image'])
 
 if __name__ == '__main__':
     main()
