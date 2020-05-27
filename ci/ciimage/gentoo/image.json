@@ -1,0 +1,16 @@
+{
+  "base_image": "gentoo/stage3-amd64:latest",
+  "stages": [
+    {
+      "image": "gentoo/portage:latest",
+      "as": "portage",
+      "cmds": []
+    }
+  ],
+  "cmds": [ "COPY --from=portage /var/db/repos/gentoo /var/db/repos/gentoo" ],
+  "env": {
+    "CI": "1",
+    "VALAC": "/usr/bin/valac-0.46",
+    "VAPIGEN": "/usr/bin/vapigen-0.46"
+  }
+}
