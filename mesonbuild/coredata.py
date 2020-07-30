@@ -440,6 +440,11 @@ class CoreData:
             raise MesonException('Cannot find specified {} file: {}'.format(ftype, f))
         return real
 
+    def clear_cache(self) -> None:
+        self.deps.host.clear()
+        self.deps.build.clear()
+        self.compiler_check_cache.clear()
+
     def builtin_options_libdir_cross_fixup(self):
         # By default set libdir to "lib" when cross compiling since
         # getting the "system default" is always wrong on multiarch
