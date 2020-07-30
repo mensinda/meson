@@ -61,6 +61,8 @@ from glob import glob
 if os.path.basename(sys.executable) == 'meson.exe':
     # In Windows and using the MSI installed executable.
     python_command = [sys.executable, 'runpython']
+elif 'MESON_AppRun_APPIMAGE' in os.environ:
+    python_command = [os.environ['MESON_AppRun_APPIMAGE'], '--apprun-python3']
 else:
     python_command = [sys.executable]
 meson_command = None

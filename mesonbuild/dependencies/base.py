@@ -1809,6 +1809,18 @@ class ExternalProgram:
                 if self.found():
                     break
 
+        # AppImage: Check if the executable is inside the AppDir. If yes, replace
+        #           it with the path to the Meson.AppImage --apprun-<cmd>
+        appdir = os.environ.get('MESON_AppRun_APPDIR', None)
+        # TODO: Why can self.command[0] be None?
+        if appdir and self.command and self.command[0]:
+            if self.command[0].startswith(appdir):
+                appimage = os.environ['MESON_AppRun_APPIMAGE']
+                path_name = Path(self.command[0]).name
+                new_cmd = [appimage, '--apprun-' + path_name]
+                mlog.debug('Dependency', self.name, ': Replacing', self.command[0], 'with', str(new_cmd))
+                self.command = new_cmd + self.command[1:]
+
         # Set path to be the last item that is actually a file (in order to
         # skip options in something like ['python', '-u', 'file.py']. If we
         # can't find any components, default to the last component of the path.
