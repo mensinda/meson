@@ -160,18 +160,31 @@ def detect_ninja(version: str = '1.7', log: bool = False) -> str:
     r = detect_ninja_command_and_version(version, log)
     return r[0] if r else None
 
-def detect_ninja_command_and_version(version: str = '1.7', log: bool = False) -> (str, str):
-    env_ninja = os.environ.get('NINJA', None)
-    for n in [env_ninja] if env_ninja else ['ninja', 'ninja-build', 'samu']:
+def detect_ninja_command_and_version(version: str = '1.7', log: bool = False) -> (T.List[str], str):
+    def check_ninja_vers(cmd):
         try:
-            p, found = Popen_safe([n, '--version'])[0:2]
+            p, found = Popen_safe(cmd + ['--version'])[0:2]
         except (FileNotFoundError, PermissionError):
             # Doesn't exist in PATH or isn't executable
-            continue
+            return None
         found = found.strip()
         # Perhaps we should add a way for the caller to know the failure mode
         # (not found or too old)
-        if p.returncode == 0 and mesonlib.version_compare(found, '>=' + version):
+        return found if p.returncode == 0 and mesonlib.version_compare(found, '>=' + version) else None
+
+    # Always use AppImage ninja (if running in AppImage mode)
+    appimage = os.environ.get('MESON_AppRun_APPIMAGE', None)
+    if appimage:
+        ninja = [appimage, '--apprun-ninja']
+        vers = check_ninja_vers(ninja)
+        if vers:
+            return (ninja, vers)
+        return None
+
+    env_ninja = os.environ.get('NINJA', None)
+    for n in [env_ninja] if env_ninja else ['ninja', 'ninja-build', 'samu']:
+        found = check_ninja_vers([n])
+        if found:
             n = shutil.which(n)
             if log:
                 name = os.path.basename(n)
@@ -182,7 +195,8 @@ def detect_ninja_command_and_version(version: str = '1.7', log: bool = False) ->
                 if name == 'samu':
                     name = 'samurai'
                 mlog.log('Found {}-{} at {}'.format(name, found, quote_arg(n)))
-            return (n, found)
+            return ([n], found)
+    return None
 
 def get_llvm_tool_names(tool: str) -> T.List[str]:
     # Ordered list of possible suffixes of LLVM executables to try. Start with

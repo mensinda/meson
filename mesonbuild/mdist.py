@@ -184,15 +184,15 @@ def run_dist_steps(meson_command, unpacked_src_dir, builddir, installdir, ninja_
     if subprocess.call(meson_command + ['--backend=ninja', unpacked_src_dir, builddir]) != 0:
         print('Running Meson on distribution package failed')
         return 1
-    if subprocess.call([ninja_bin], cwd=builddir) != 0:
+    if subprocess.call(ninja_bin, cwd=builddir) != 0:
         print('Compiling the distribution package failed')
         return 1
-    if subprocess.call([ninja_bin, 'test'], cwd=builddir) != 0:
+    if subprocess.call(ninja_bin + ['test'], cwd=builddir) != 0:
         print('Running unit tests on the distribution package failed')
         return 1
     myenv = os.environ.copy()
     myenv['DESTDIR'] = installdir
-    if subprocess.call([ninja_bin, 'install'], cwd=builddir, env=myenv) != 0:
+    if subprocess.call(ninja_bin + ['install'], cwd=builddir, env=myenv) != 0:
         print('Installing the distribution package failed')
         return 1
     return 0
