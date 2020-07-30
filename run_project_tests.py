@@ -1145,6 +1145,7 @@ def check_format():
         'meson-logs', 'meson-private',
         '.eggs', '_cache',              # e.g. .mypy_cache
         'venv',                         # virtualenvs have DOS line endings
+        'appimage',
     }
     for (root, _, filenames) in os.walk('.'):
         if any([x in root for x in skip_dirs]):
