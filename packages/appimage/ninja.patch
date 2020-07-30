@@ -1,0 +1,20 @@
+diff --git a/src/ninja.cc b/src/ninja.cc
+index 00e3a5c..654862c 100644
+--- a/src/ninja.cc
++++ b/src/ninja.cc
+@@ -1353,6 +1353,15 @@ NORETURN void real_main(int argc, char** argv) {
+   setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
+   const char* ninja_command = argv[0];
+ 
++  // Reset LD_LIBRARY_PATH if we are running in an AppDir
++  char* appimage_var = getenv("MESON_AppRun_LD_LIBRARY_PATH");
++  if (appimage_var) {
++    size_t len = 18 + strlen(appimage_var);
++    char* newenv = reinterpret_cast<char*>(malloc(len * sizeof(char)));
++    snprintf(newenv, len, "LD_LIBRARY_PATH=%s", appimage_var);
++    putenv(newenv);
++  }
++
+   int exit_code = ReadFlags(&argc, &argv, &options, &config);
+   if (exit_code >= 0)
+     exit(exit_code);

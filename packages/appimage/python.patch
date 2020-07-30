@@ -1,0 +1,18 @@
+diff --git a/Lib/subprocess.py b/Lib/subprocess.py
+index 86fdf27f9b..74e4ff0a68 100644
+--- a/Lib/subprocess.py
++++ b/Lib/subprocess.py
+@@ -1688,6 +1688,13 @@ class Popen(object):
+             if executable is None:
+                 executable = args[0]
+ 
++            # Meson AppImage fix LD_LIBRARY_PATH
++            if env is None:
++                env = os.environ.copy()
++            appimg_ld = env.get('MESON_AppRun_LD_LIBRARY_PATH', None)
++            if appimg_ld is not None:
++                env['LD_LIBRARY_PATH'] = appimg_ld
++
+             sys.audit("subprocess.Popen", executable, args, cwd, env)
+ 
+             if (_USE_POSIX_SPAWN
